@@ -4,7 +4,7 @@ class Torch:
         self.name = name
     
     def print(self):
-        print('this is torch class'+self.name)
+        print('this is torch class\n'+'이름은: ' + self.name)
 
 
 def main():
