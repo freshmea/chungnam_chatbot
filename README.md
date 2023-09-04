@@ -13,6 +13,7 @@
 * 공유에 필요한 정보
   * freshmea
   * discord https://discord.gg/HE95smd5
+  * 학급 공유 PPT https://docs.google.com/presentation/d/1UXlPX_x0j9LlrVEoS7Fm0AyVjBaYCy_13M3l74Um26E/edit?usp=sharing
 
 ```python
 import time
