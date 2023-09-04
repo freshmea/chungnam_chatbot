@@ -6,7 +6,7 @@ mnist_transform = transforms.Compose([
 
 from torchvision.datasets import MNIST
 import requests
-download_root = 'pythorch/data/MNIST_DATASET'
+download_root = 'pytorch/data/MNIST_DATASET'
 
 train_dataset = MNIST(download_root, transform=mnist_transform, 
                       train=True, download=True)
