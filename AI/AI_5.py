@@ -14,7 +14,7 @@ class MLP(nn.Module):
         X = self.layer(X)
         X = self.activation(X)
         return X
-str().
+
 mlp = MLP(1)
 print(mlp.layer)
 # mlp.forward(1)
