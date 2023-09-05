@@ -126,7 +126,7 @@ print(y_val[:5])
 
 y_val = np.argmax(y_val, axis=1)
 print(y_val[:5])
-print(a)
+
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
 print(confusion_matrix(test_outputs, y_val))
 print(classification_report(test_outputs, y_val))
