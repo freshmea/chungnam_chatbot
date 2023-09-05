@@ -7,11 +7,15 @@ import seaborn as sns
 
 dataset = pd.read_csv(r'pytorch/data/car_evaluation.csv')
 dataset.head()
+
+# 표로 나타내기. plt
 fig_size = plt.rcParams["figure.figsize"]
 fig_size[0] = 8
 fig_size[1] = 6
 plt.rcParams["figure.figsize"] = fig_size
 dataset.output.value_counts().plot(kind='pie', autopct='%0.05f%%', colors=['lightblue', 'lightgreen', 'orange', 'pink'], explode=(0.05, 0.05, 0.05,0.05))
+# plt.show()
+
 categorical_columns = ['price', 'maint', 'doors', 'persons', 'lug_capacity', 'safety']
 for category in categorical_columns:
     dataset[category] = dataset[category].astype('category')
@@ -84,3 +88,48 @@ class Model(nn.Module):
     
 model = Model(categorical_embedding_sizes, 4, [200,100,50], p=0.4)
 print(model)
+
+loss_function = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+if torch.cuda.is_available():
+    device = torch.device('cuda')
+else:
+    device = torch.device('cpu')
+
+epochs = 500
+aggregated_losses = []
+train_outputs = train_outputs.to(device=device, dtype=torch.int64)
+for i in range(epochs):
+    i += 1
+    y_pred = model(categorical_train_data)
+    single_loss = loss_function(y_pred, train_outputs)
+    aggregated_losses.append(single_loss)
+
+    if i%25 == 1:
+        print(f'epoch: {i:3} loss: {single_loss.item():10.8f}')
+
+    optimizer.zero_grad()
+    single_loss.backward()
+    optimizer.step()
+
+print(f'epoch: {i:3} loss: {single_loss.item():10.10f}')
+
+test_outputs = test_outputs.to(device=device, dtype=torch.int64)
+
+with torch.no_grad():
+    y_val = model(categorical_test_data)
+    loss = loss_function(y_val, test_outputs)
+print(f'Loss: {loss:.8f}')
+
+print(y_val[:5])
+
+y_val = np.argmax(y_val, axis=1)
+print(y_val[:5])
+
+from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
+print(confusion_matrix(test_outputs, y_val))
+print(classification_report(test_outputs, y_val))
+print(accuracy_score(test_outputs, y_val))
+
+
