@@ -48,20 +48,16 @@ labels = db_default.labels_
 colours = {0:'r', 1:'g', 2:'b', 3:'c', 4:'y', 5:'m', -1:'k'}
 cvec = [colours[label] for label in labels]
 # colors1 = ['r', 'g', 'b', 'c', 'y', 'm', 'k']
-# colors1 =list('rgbcymk')
-r = plt.scatter(X_principal['P1'], X_principal['P2'], marker = 'o' ,color = 'r')
-g = plt.scatter(X_principal['P1'], X_principal['P2'], marker = 'o' ,color = 'g')
-b = plt.scatter(X_principal['P1'], X_principal['P2'], marker = 'o' ,color = 'b')
-c = plt.scatter(X_principal['P1'], X_principal['P2'], marker = 'o' ,color = 'c')
-y = plt.scatter(X_principal['P1'], X_principal['P2'], marker = 'o' ,color = 'y')
-m = plt.scatter(X_principal['P1'], X_principal['P2'], marker = 'o' ,color = 'm')
-k = plt.scatter(X_principal['P1'], X_principal['P2'], marker = 'o' ,color = 'k')
+colors1 =list('rgbcymk')
+scatter_li = []
+for c in colors1:
+    scatter_li.append(plt.scatter(X_principal['P1'], X_principal['P2'], marker = 'o' ,color = c))
 
 plt.figure(figsize=(9,9))
 plt.scatter(X_principal['P1'], X_principal['P2'], c = cvec)
 
 plt.legend(
-    (r, g, b, c, y, m, k),
+    (tuple([sc for sc in scatter_li])),
     ('label 0', 'label 1', 'label 2', 'label 3','label 4', 'label 5', 'label -1'),
     scatterpoints = 1,
     loc = 'upper left',
