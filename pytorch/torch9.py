@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn import metrics
+import pickle
 names = ['sepal-length', 'sepal-width', 'petal-length', 'petal-width', 'Class']
 dataset = pd.read_csv('pytorch/data/iris.data', names=names)
 
@@ -23,6 +24,9 @@ from sklearn.neighbors import KNeighborsClassifier
 knn = KNeighborsClassifier(n_neighbors=50)
 knn.fit(X_train, y_train)
 
+with open('pytorch/data/knn.picke', 'bw') as f:
+    pickle.dump(knn, f)
+    
 from sklearn.metrics import accuracy_score
 y_pred = knn.predict(X_test)
 print("정확도: {}".format( accuracy_score(y_test, y_pred)))
