@@ -131,5 +131,3 @@ from sklearn.metrics import classification_report, confusion_matrix, accuracy_sc
 print(confusion_matrix(test_outputs, y_val))
 print(classification_report(test_outputs, y_val))
 print(accuracy_score(test_outputs, y_val))
-
-
