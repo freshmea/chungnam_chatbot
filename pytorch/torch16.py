@@ -26,18 +26,45 @@ X_principal = pd.DataFrame(X_principal)
 X_principal.columns = ['P1', 'P2']
 print(X_principal.head())
 
-db_default = DBSCAN(eps= 0.0375, min_samples=3).fit(X_principal)
+# db_default = DBSCAN(eps= 0.0375, min_samples=3).fit(X_principal)
+# labels = db_default.labels_
+
+# colours = {0:'r', 1:'g', 2:'b', -1:'k'}
+# cvec = [colours[label] for label in labels]
+# r = plt.scatter(X_principal['P1'], X_principal['P2'], color = 'r')
+# g = plt.scatter(X_principal['P1'], X_principal['P2'], color = 'g')
+# b = plt.scatter(X_principal['P1'], X_principal['P2'], color = 'b')
+# k = plt.scatter(X_principal['P1'], X_principal['P2'], color = 'k')
+
+# plt.figure(figsize=(9,9))
+# plt.scatter(X_principal['P1'], X_principal['P2'], c = cvec)
+
+# plt.legend((r, g, b, k), ('label 0', 'label 1', 'label 2', 'label 3'))
+# plt.show()
+
+db_default = DBSCAN(eps= 0.0375, min_samples=50).fit(X_principal)
 labels = db_default.labels_
 
-colours = {0:'r', 1:'g', 2:'b', -1:'k'}
+colours = {0:'r', 1:'g', 2:'b', 3:'c', 4:'y', 5:'m', -1:'k'}
 cvec = [colours[label] for label in labels]
-r = plt.scatter(X_principal['P1'], X_principal['P2'], color = 'r')
-g = plt.scatter(X_principal['P1'], X_principal['P2'], color = 'g')
-b = plt.scatter(X_principal['P1'], X_principal['P2'], color = 'b')
-k = plt.scatter(X_principal['P1'], X_principal['P2'], color = 'k')
+# colors1 = ['r', 'g', 'b', 'c', 'y', 'm', 'k']
+# colors1 =list('rgbcymk')
+r = plt.scatter(X_principal['P1'], X_principal['P2'], marker = 'o' ,color = 'r')
+g = plt.scatter(X_principal['P1'], X_principal['P2'], marker = 'o' ,color = 'g')
+b = plt.scatter(X_principal['P1'], X_principal['P2'], marker = 'o' ,color = 'b')
+c = plt.scatter(X_principal['P1'], X_principal['P2'], marker = 'o' ,color = 'c')
+y = plt.scatter(X_principal['P1'], X_principal['P2'], marker = 'o' ,color = 'y')
+m = plt.scatter(X_principal['P1'], X_principal['P2'], marker = 'o' ,color = 'm')
+k = plt.scatter(X_principal['P1'], X_principal['P2'], marker = 'o' ,color = 'k')
 
 plt.figure(figsize=(9,9))
 plt.scatter(X_principal['P1'], X_principal['P2'], c = cvec)
 
-plt.legend((r, g, b, k), ('label 0', 'label 1', 'label 2', 'label 3'))
+plt.legend(
+    (r, g, b, c, y, m, k),
+    ('label 0', 'label 1', 'label 2', 'label 3','label 4', 'label 5', 'label -1'),
+    scatterpoints = 1,
+    loc = 'upper left',
+    ncol = 3,
+    fontsize = 8)
 plt.show()
