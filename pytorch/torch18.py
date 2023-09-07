@@ -16,43 +16,38 @@ test_dataset = torchvision.datasets.FashionMNIST('pytorch/data', download=True, 
 train_loader = DataLoader(train_dataset, batch_size=100)
 test_loader = DataLoader(test_dataset, batch_size=100)
 
-label_map = { 0:'T-Shirt', 1:'Trouser', 2:'Pullover', 3:'Dress', 4:'Coat', 5:'Sandal', 6:'Shirt', 7:'Sneaker', 8:'Bag', 9:'Ankle Boot'}
-
-# 시각적 표현
-# fig = plt.figure(figsize=(8,8))
-# columns = 10
-# rows = 10
-# for i in range(1, columns*rows +1 ):
-#     img_xy = np.random.randint(len(train_dataset))
-#     img = train_dataset[img_xy][0][0,:,:]
-#     fig.add_subplot(rows, columns, i)
-#     plt.title(label_map[train_dataset[img_xy][1]])
-#     plt.axis('off')
-#     plt.imshow(img, cmap='gray')
-# plt.show()
-
-class FashionDNN(nn.Module):
+class FashionCNN(nn.Module):
     def __init__(self):
         super().__init__()
-        self.fc1 = nn.Linear(784, 256)
-        self.drop = nn.Dropout(0.25)
-        self.fc2 = nn.Linear(256, 128)
-        self.fc3 = nn.Linear(128, 10)
+        self.layer1 = nn.Sequential(
+            nn.Conv2d(1, 32, 3, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.MaxPool2d(2,2)
+        )
+        self.layer2 = nn.Sequential(
+            nn.Conv2d(32, 64, 3),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+            nn.MaxPool2d(2)
+        )
+        self.fc1 = nn.Linear(int(32*(48+1)/2), 600) # 784
+        self.drop = nn.Dropout2d(0.25)
+        self.fc2 = nn.Linear(600, 120)
+        self.fc3 = nn.Linear(120, 10)
     
     def forward(self, input_data):
-        out = input_data.view(-1, 784)
-        # print(out.shape)
-        
-        # out = self.fc1(out)
-        # out = F.relu(out)
+        out = self.layer1(input_data)
+        out = self.layer2(out)
+        out = input_data.view(out.size(0), -1)
         out = F.relu(self.fc1(out))
         out = self.drop(out)
         out = F.relu(self.fc2(out))
-        out = self.fc3(out)
+        out = F.softmax(self.fc3(out))
         return out
 
 learning_rate = 0.001
-model = FashionDNN()
+model = FashionCNN()
 print(model)
 model.to(device)
 
@@ -69,8 +64,6 @@ labels_list = []
 
 for epoch in range(num_epochs):
     for images, labels in train_loader:
-        # images = images.to(device)
-        # labels = labels.to(device)
         images, labels = images.to(device), labels.to(device)
 
         train = Variable(images.view(100, 1, 28, 28))
