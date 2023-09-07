@@ -31,7 +31,7 @@ class FashionCNN(nn.Module):
             nn.ReLU(),
             nn.MaxPool2d(2)
         )
-        self.fc1 = nn.Linear(int(32*(48+1)/2), 600) # 784
+        self.fc1 = nn.Linear(64*6*6, 600) # 784
         self.drop = nn.Dropout2d(0.25)
         self.fc2 = nn.Linear(600, 120)
         self.fc3 = nn.Linear(120, 10)
@@ -39,7 +39,7 @@ class FashionCNN(nn.Module):
     def forward(self, input_data):
         out = self.layer1(input_data)
         out = self.layer2(out)
-        out = input_data.view(out.size(0), -1)
+        out = out.view(out.size(0), -1)
         out = F.relu(self.fc1(out))
         out = self.drop(out)
         out = F.relu(self.fc2(out))
