@@ -43,7 +43,7 @@ class FashionCNN(nn.Module):
         out = F.relu(self.fc1(out))
         out = self.drop(out)
         out = F.relu(self.fc2(out))
-        out = F.softmax(self.fc3(out))
+        out = self.fc3(out)
         return out
 
 learning_rate = 0.001
