@@ -29,12 +29,19 @@ train_dataset = torchvision.datasets.ImageFolder(
 )
 
 train_loader = DataLoader(
-    train_dataset, batch_size=32, num_workers=8, shuffle=True
+    train_dataset, batch_size=32, shuffle=True
 )
 
 print(len(train_dataset))
 
-samples, labels = iter(train_loader).next()
-classes = {0:'cat', 1:'dog'}
-fig = plt.figure(figsize=(16,24))
-for 
+# samples, labels = train_loader._get_iterator()._next_data()
+# classes = {0:'cat', 1:'dog'}
+# fig = plt.figure(figsize=(16,24))
+# for i in range(24):
+#     fig.add_subplot(4, 6, i+1)
+#     plt.title(classes[labels[i].item()])
+#     plt.axis('off')
+#     plt.imshow(np.transpose(samples[i].numpy(), (1,2,0)))
+# plt.subplots_adjust(bottom=0.2, top=0.6, hspace=0)
+# plt.show()
+
