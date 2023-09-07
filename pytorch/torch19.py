@@ -33,3 +33,8 @@ train_loader = DataLoader(
 )
 
 print(len(train_dataset))
+
+samples, labels = iter(train_loader).next()
+classes = {0:'cat', 1:'dog'}
+fig = plt.figure(figsize=(16,24))
+for 
