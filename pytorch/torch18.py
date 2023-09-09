@@ -9,6 +9,7 @@ import torchvision
 import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
 
+
 print(torch.cuda.is_available())
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 train_dataset = torchvision.datasets.FashionMNIST('pytorch/data', download=True, transform=transforms.Compose([transforms.ToTensor()]))

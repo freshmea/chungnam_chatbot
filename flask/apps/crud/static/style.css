@@ -1,0 +1,11 @@
+table {
+    /* 인접하는 보더를 겹쳐서 1개로 해서 표시한다 */
+    border-collapse: collapse;
+}
+
+table,
+th,
+td {
+    /* 1px의 실선으로 해서 색을 조절한다 */
+    border: 1px solid #c0c0c0;
+}
