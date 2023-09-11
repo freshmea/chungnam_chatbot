@@ -81,3 +81,51 @@ for param in model.fc.parameters():
 optimizer = torch.optim.Adam(model.fc.parameters())
 cost = torch.nn.CrossEntropyLoss()
 print(model)
+
+
+def train_model(
+    model, dataloaders, criterion, optimizer, device, num_epochs=13, is_train=True
+):
+    since = time.time()
+    acc_history = []
+    loss_history = []
+    best_acc = 0.0
+
+    for epoch in range(num_epochs):
+        print(f"Epoch {epoch}/{num_epochs-1}")
+        # print('----------')
+        print("-" * 10)
+        running_loss = 0.0
+        running_corrects = 0
+
+        for inputs, labels in dataloaders:
+            inputs, labels = inputs.to(device), labels.to(device)
+
+            model.to(device)
+            optimizer.zero_grad()
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            _, preds = torch.max(outputs, 1)
+            loss.backward()
+            optimizer.step()
+
+            running_loss += loss.item() * inputs.size(0)
+            running_corrects += torch.sum(preds == labels.data)
+        epoch_loss = running_loss / len(dataloaders.dataset)
+        epoch_acc = running_corrects.double() / len(dataloaders.dataset)
+
+        print(f"Loss: {epoch_loss:.4f} Acc: {epoch_acc:.4f}")
+
+        if epoch_acc > best_acc:
+            best_acc = epoch_acc
+
+        acc_history.append(epoch_acc.item())
+        loss_history.append(epoch_loss)
+        torch.save(
+            model.state.dict(), os.path.join(data_path, "0:0=2d.pth".format(epoch))
+        )
+        print()
+    time_elapsed = time.time() - since
+    print(f"Training complete in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s")
+    print(f"Best Acc: {best_acc:4f}")
+    return acc_history, loss_history
