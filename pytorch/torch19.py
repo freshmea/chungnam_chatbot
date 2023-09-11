@@ -161,3 +161,50 @@ test_dataset = torchvision.datasets.ImageFolder(root=test_path, transform=transf
 test_loader = DataLoader(test_dataset, batch_size=32, num_workers=1, shuffle=True)
 
 print(len(test_dataset))
+
+
+def eval_model(model, dataloaders, device):
+    since = time.time()
+    acc_history = []
+    best_acc = 0.0
+
+    saved_models = glob.glob(
+        "C:/chungnam_chatbot/pytorch/data/catanddog/train/" + "*.pth"
+    )
+    saved_models.sort()
+    print("saved_model", saved_models)
+
+    for model_path in saved_models:
+        print("Loading model", model_path)
+
+        model.load_state_dict(torch.load(model_path))
+        model.eval()
+        model.to(device)
+        running_corrects = 0
+
+        for inputs, labels in dataloaders:
+            inputs = inputs.to(device)
+            labels = labels.to(device)
+
+            with torch.no_grad():
+                outputs = model(inputs)
+
+            _, preds = torch.max(outputs.data, 1)
+            preds[preds >= 0.5] = 1
+            preds[preds < 0.5] = 0
+            running_corrects += preds.cpu().eq(labels.cpu()).int().sum()
+
+        epoch_acc = running_corrects.double() / len(dataloaders.dataset)
+        print(f"Acc: {epoch_acc:.4f}")
+        if epoch_acc > best_acc:
+            best_acc = epoch_acc
+        acc_history.append(epoch_acc.item())
+        print()
+
+    time_elapesed = time.time() - since
+    print(f"Validation complete in {time_elapesed//60:.0f}m {time_elapesed&60:.0f}s")
+    print(f"Best Acc: {best_acc:4f}")
+    return acc_history
+
+
+val_acc_list = eval_model(resnet18, test_loader, device)
