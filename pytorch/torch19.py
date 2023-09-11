@@ -1,22 +1,23 @@
-import copy
+# import copy
+# import shutil
+# import cv2
+# import pandas as pd
+# import torch.nn.functional as F
+# from torch.autograd import Variable
 import glob
 import os
-import shutil
 import time
-
-import cv2
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 import torchvision
 import torchvision.models as models
 import torchvision.transforms as transforms
-from torch.autograd import Variable
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
+
+# Dataset
 
 # os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
 # # os.environ["TORCH_USE_CUDA_DSA"] = "enable"
@@ -202,7 +203,9 @@ def eval_model(model, dataloaders, device):
         print()
 
     time_elapesed = time.time() - since
-    print(f"Validation complete in {time_elapesed//60:.0f}m {time_elapesed&60:.0f}s")
+    print(
+        f"Validation complete in {time_elapesed // 60:.0f}m {time_elapesed % 60:.0f}s"
+    )
     print(f"Best Acc: {best_acc:4f}")
     return acc_history
 

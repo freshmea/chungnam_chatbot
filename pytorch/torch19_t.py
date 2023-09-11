@@ -127,7 +127,7 @@ def train_model(
 
 params_to_update = []
 for name, param in resnet18.named_parameters():
-    if param.requires_grad == True:
+    if param.requires_grad is True:
         params_to_update.append(param)
         print("\t", name)
 
