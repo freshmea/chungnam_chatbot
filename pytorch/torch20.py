@@ -100,3 +100,27 @@ class XAI(torch.nn.Module):
 model = XAI()
 model.to(device)
 model.eval()
+
+
+# 4 번 셀 --------------------------------
+class LayerActivations:
+    features = []
+
+    def __init__(self, model, layer_num):
+        self.hook = model[layer_num].register_forward_hook(self.hook_fn)
+
+    def hook_fn(self, module, input, output):
+        self.features = output.detach().numpu()
+
+    def remove(self):
+        self.hook.remove()
+
+
+# 5 번 셀 --------------------------------
+img = cv2.imread("")
+
+
+la = LayerActivations()
+
+print(la.features)
+LayerActivations.features
