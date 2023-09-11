@@ -1,16 +1,3 @@
-# 1 번 셀 --------------------------------
-# import copy
-# import shutil
-# import pandas as pd
-# from torch.autograd import Variable
-# import glob
-# import os
-# import time
-# import numpy as np
-# import torch.optim as optim
-# from torch.utils.data import DataLoader
-
-
 import matplotlib.pyplot as plt
 from PIL import Image
 import cv2
@@ -25,10 +12,9 @@ import torchvision.models as models
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-# 2 번 셀 --------------------------------
 class XAI(torch.nn.Module):
     def __init__(self, num_classes=2):
-        super().__init__()
+        super(XAI, self).__init__()
         self.features = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=3, bias=False),
             nn.BatchNorm2d(64),
@@ -99,13 +85,11 @@ class XAI(torch.nn.Module):
         return F.log_softmax(x)
 
 
-# 3 번 셀 --------------------------------
 model = XAI()
 model.to(device)
 model.eval()
 
 
-# 4 번 셀 --------------------------------
 class LayerActivations:
     features = []
 
@@ -113,27 +97,23 @@ class LayerActivations:
         self.hook = model[layer_num].register_forward_hook(self.hook_fn)
 
     def hook_fn(self, module, input, output):
-        self.features = output.cpu().detach().numpy()
+        self.features = output.detach().numpy()
 
     def remove(self):
         self.hook.remove()
 
 
-# 5 번 셀 --------------------------------
-img = cv2.imread(r"C:\chungnam_chatbot\pytorch\data\catanddog\cat.jpg")
+img = cv2.imread("../chap05/data/cat.jpg")
 plt.imshow(img)
 img = cv2.resize(img, (100, 100), interpolation=cv2.INTER_LINEAR)
 img = ToTensor()(img).unsqueeze(0)
 print(img.shape)
 
-
-# 6 번 셀 --------------------------------
 result = LayerActivations(model.features, 0)
-img = img.to(device)
+
 model(img)
 activations = result.features
 
-# 7 번 셀 --------------------------------
 fig, axes = plt.subplots(4, 4)
 fig = plt.figure(figsize=(12, 8))
 fig.subplots_adjust(left=0, right=1, bottom=0, top=1, hspace=0.05, wspace=0.05)
