@@ -18,9 +18,9 @@ import torchvision.transforms as transforms
 from torch.autograd import Variable
 from torch.utils.data import DataLoader, Dataset
 
-os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
-os.environ["TORCH_USE_CUDA_DSA"] = "enable"
-
+# os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
+# # os.environ["TORCH_USE_CUDA_DSA"] = "enable"
+# torch.cuda.synchronize()
 data_path = "C:/chungnam_chatbot/pytorch/data/catanddog/train"
 
 transform = transforms.Compose(
@@ -37,20 +37,20 @@ train_dataset = torchvision.datasets.ImageFolder(
     transform=transform,
 )
 
-train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)
+train_loader = DataLoader(train_dataset, batch_size=64, shuffle=True)
 
 
 print(len(train_dataset))
 
-# samples, labels = train_loader._get_iterator()._next_data()
-# classes = {0: "cat", 1: "dog"}
-# fig = plt.figure(figsize=(16, 24))
-# for i in range(24):
-#     fig.add_subplot(4, 6, i + 1)
-#     plt.title(classes[labels[i].item()])
-#     plt.axis("off")
-#     plt.imshow(np.transpose(samples[i].numpy(), (1, 2, 0)))
-# plt.subplots_adjust(bottom=0.2, top=0.6, hspace=0)
+samples, labels = train_loader._get_iterator()._next_data()
+classes = {0: "cat", 1: "dog"}
+fig = plt.figure(figsize=(16, 24))
+for i in range(24):
+    fig.add_subplot(4, 6, i + 1)
+    plt.title(classes[labels[i].item()])
+    plt.axis("off")
+    plt.imshow(np.transpose(samples[i].numpy(), (1, 2, 0)))
+plt.subplots_adjust(bottom=0.2, top=0.6, hspace=0)
 # plt.show()
 
 resnet18 = models.resnet18(pretrained=True)
@@ -63,7 +63,7 @@ def set_parameter_requires_grad(model, feature_extracting=True):
 
 
 set_parameter_requires_grad(resnet18)
-resnet18.fc = nn.Linear(512, 1)
+resnet18.fc = nn.Linear(512, 2)
 
 for name, param in resnet18.named_parameters():
     print(name)
@@ -125,7 +125,7 @@ def train_model(
         acc_history.append(epoch_acc.item())
         loss_history.append(epoch_loss)
         torch.save(
-            model.state.dict(), os.path.join(data_path, "0:0=2d.pth".format(epoch))
+            model.state_dict(), os.path.join(data_path, "{0:0=2d}.pth".format(epoch))
         )
         print()
     time_elapsed = time.time() - since
@@ -147,3 +147,17 @@ criterion = nn.CrossEntropyLoss()
 train_acc_hist, train_loss_hist = train_model(
     resnet18, train_loader, criterion, optimizer, device
 )
+
+test_path = "C:/chungnam_chatbot/pytorch/data/catanddog/test"
+
+transform = transforms.Compose(
+    [
+        transforms.Resize(224),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+    ]
+)
+test_dataset = torchvision.datasets.ImageFolder(root=test_path, transform=transform)
+test_loader = DataLoader(test_dataset, batch_size=32, num_workers=1, shuffle=True)
+
+print(len(test_dataset))
