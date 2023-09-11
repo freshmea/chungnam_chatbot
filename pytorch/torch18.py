@@ -1,21 +1,31 @@
-import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
+# import numpy as np
+# import pandas as pd
+# import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
 import torch.nn.functional as F
 import torchvision
 import torchvision.transforms as transforms
-from torch.utils.data import Dataset, DataLoader
+
+# from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import DataLoader
 
 
 print(torch.cuda.is_available())
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-train_dataset = torchvision.datasets.FashionMNIST('pytorch/data', download=True, transform=transforms.Compose([transforms.ToTensor()]))
-test_dataset = torchvision.datasets.FashionMNIST('pytorch/data', download=True, train=False, transform=transforms.Compose([transforms.ToTensor()]))
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+train_dataset = torchvision.datasets.FashionMNIST(
+    "pytorch/data", download=True, transform=transforms.Compose([transforms.ToTensor()])
+)
+test_dataset = torchvision.datasets.FashionMNIST(
+    "pytorch/data",
+    download=True,
+    train=False,
+    transform=transforms.Compose([transforms.ToTensor()]),
+)
 train_loader = DataLoader(train_dataset, batch_size=100)
 test_loader = DataLoader(test_dataset, batch_size=100)
+
 
 class FashionCNN(nn.Module):
     def __init__(self):
@@ -24,19 +34,16 @@ class FashionCNN(nn.Module):
             nn.Conv2d(1, 32, 3, padding=1),
             nn.BatchNorm2d(32),
             nn.ReLU(),
-            nn.MaxPool2d(2,2)
+            nn.MaxPool2d(2, 2),
         )
         self.layer2 = nn.Sequential(
-            nn.Conv2d(32, 64, 3),
-            nn.BatchNorm2d(64),
-            nn.ReLU(),
-            nn.MaxPool2d(2)
+            nn.Conv2d(32, 64, 3), nn.BatchNorm2d(64), nn.ReLU(), nn.MaxPool2d(2)
         )
-        self.fc1 = nn.Linear(64*6*6, 600) # 784
+        self.fc1 = nn.Linear(64 * 6 * 6, 600)  # 784
         self.drop = nn.Dropout2d(0.25)
         self.fc2 = nn.Linear(600, 120)
         self.fc3 = nn.Linear(120, 10)
-    
+
     def forward(self, input_data):
         out = self.layer1(input_data)
         out = self.layer2(out)
@@ -46,6 +53,7 @@ class FashionCNN(nn.Module):
         out = F.relu(self.fc2(out))
         out = self.fc3(out)
         return out
+
 
 learning_rate = 0.001
 model = FashionCNN()
@@ -89,12 +97,12 @@ for epoch in range(num_epochs):
                 predictions_list.append(predictions)
                 correct += (predictions == labels).sum()
                 total += len(labels)
-    
+
             accuracy = correct * 100 / total
             loss_list.append(loss.data)
             iteration_list.append(count)
             accuracy_list.append(accuracy)
-            
+
         if not (count % 500):
-            print(f'Iteration: {count}, Loss: {loss.data}, Accuracy: {accuracy}')
+            print(f"Iteration: {count}, Loss: {loss.data}, Accuracy: {accuracy}")
 print(count)

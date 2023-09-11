@@ -18,6 +18,9 @@ import torchvision.transforms as transforms
 from torch.autograd import Variable
 from torch.utils.data import DataLoader, Dataset
 
+os.environ["CUDA_LAUNCH_BLOCKING"] = "1"
+os.environ["TORCH_USE_CUDA_DSA"] = "enable"
+
 data_path = "C:/chungnam_chatbot/pytorch/data/catanddog/train"
 
 transform = transforms.Compose(
@@ -129,3 +132,18 @@ def train_model(
     print(f"Training complete in {time_elapsed // 60:.0f}m {time_elapsed % 60:.0f}s")
     print(f"Best Acc: {best_acc:4f}")
     return acc_history, loss_history
+
+
+params_to_update = []
+for name, param in resnet18.named_parameters():
+    if param.requires_grad is True:
+        params_to_update.append(param)
+        print("\t", name)
+
+optimizer = optim.Adam(params_to_update)
+
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+criterion = nn.CrossEntropyLoss()
+train_acc_hist, train_loss_hist = train_model(
+    resnet18, train_loader, criterion, optimizer, device
+)
