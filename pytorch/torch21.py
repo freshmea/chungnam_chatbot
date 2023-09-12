@@ -3,11 +3,11 @@
 # import shutil
 # import pandas as pd
 # import glob
-# import time
 # import numpy as np
 # from torchvision.transforms import ToTensor
 # import torchvision.models as models
 
+import time
 import torch
 import torchvision
 from torch.utils.data import DataLoader, Dataset
@@ -19,9 +19,10 @@ import torch.nn as nn
 import os
 import cv2
 from PIL import Image
-from tqdm import tqdm_notebook as tqdm
+from tqdm.notebook import tqdm_notebook
 import random
 import matplotlib.pyplot as plt
+from torchsummary import summary
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -166,7 +167,7 @@ class LeNet(nn.Module):
         )
         self.relu2 = nn.ReLU()  # activation
         self.maxpool2 = nn.MaxPool2d(kernel_size=2)
-        self.fc1 = nn.Linear(107648, 512)  # 32*53*53
+        self.fc1 = nn.Linear(89888, 512)  # 32*53*53
         self.relu5 = nn.ReLU()
         self.fc2 = nn.Linear(512, 2)
         self.output = nn.Softmax(dim=1)
@@ -185,9 +186,76 @@ class LeNet(nn.Module):
         return out
 
 
-model = Lenet()
+# 9 번 셀 --------------------------------
+model = LeNet()
+model.to(device)
 print(model)
 
-from torchsummary import summary
+# 10 번 셀 --------------------------------
+# summary(model, input_size=(3, 244, 244))
 
-summary(model, input_size=(3, 244, 244))
+
+# 11 번 셀 --------------------------------
+def count_parameter(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
+
+print(f"The model has {count_parameter(model):,} trainable parameters")
+
+# 12 번 셀 ---------------------------------
+optimizer = optim.SGD(model.parameters(), lr=0.001, momentum=0.9)
+criterion = nn.CrossEntropyLoss()
+
+model.to(device)
+criterion = criterion.to(device)
+
+
+def train_model(model, dataloader_dict, criterion, optimizer, num_epoch):
+    since = time.time()
+    best_acc = 0.0
+
+    for epoch in range(num_epoch):
+        print(f"Epoch {epoch+1} / {num_epoch}")
+        print("-" * 20)
+
+        for phase in ["train", "val"]:
+            if phase == "train":
+                model.train()
+            else:
+                model.eval()
+
+            epoch_loss = 0.0
+            epoch_corrects = 0
+            for inputs, labels in dataloader_dict[phase]:
+                inputs = inputs.to(device)
+                labels = labels.to(device)
+                optimizer.zero_grad()
+
+                with torch.set_grad_enabled(phase == "train"):
+                    outputs = model(inputs)
+                    _, preds = torch.max(outputs, 1)
+                    loss = criterion(outputs, labels)
+
+                    if phase == "train":
+                        loss.backward()
+                        optimizer.step()
+
+                    epoch_loss += loss.item() * inputs.size(0)
+                    epoch_corrects += torch.sum(preds == labels.data)
+
+            epoch_loss = epoch_loss / len(dataloader_dict[phase].dataset)
+            epoch_acc = epoch_corrects.double() / len(dataloader_dict[phase].dataset)
+
+            print(f"{phase} Loss: {epoch_loss} Acc: {epoch_acc}")
+
+            if phase == "val" and epoch_acc > best_acc:
+                best_acc = epoch_acc
+                best_model_wts = model.state_dict()
+
+    time_elapsed = time.time() - since
+    print(f"Training complete in {time_elapsed//60:.0f}m {time_elapsed % 60:.0f}s")
+    return model
+
+
+num_epoch = 10
+model = train_model(model, dataloader_dict, criterion, optimizer, num_epoch)
