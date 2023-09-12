@@ -5,7 +5,6 @@
 # import glob
 # import time
 # import numpy as np
-# import torch.nn as nn
 # from torchvision.transforms import ToTensor
 # import torchvision.models as models
 
@@ -16,6 +15,7 @@ import torchvision.transforms as transforms
 from torch.autograd import Variable
 import torch.optim as optim
 import torch.nn.functional as F
+import torch.nn as nn
 import os
 import cv2
 from PIL import Image
@@ -135,5 +135,59 @@ val_dataset = DogvsCatDataset(
     val_image_filepaths, tranform=ImageTransform(size, mean, std), phase="val"
 )
 index = 0
-print(train_dataset.__getitem__(index)[0].size())
-print(train_dataset.__getitem__(index)[1])
+# print(train_dataset.__getitem__(index)[0].size())
+# print(train_dataset.__getitem__(index)[1])
+print(train_dataset[index][0].size())
+print(train_dataset[index][1])
+
+
+# 7 번 셀 --------------------------------
+train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+val_dataloader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+dataloader_dict = {"train": train_dataloader, "val": val_dataloader}
+
+batch_iterator = iter(train_dataloader)
+inputs, label = next(batch_iterator)
+print(inputs.size())
+print(label)
+
+
+# 8 번 셀 --------------------------------
+class LeNet(nn.Module):
+    def __init__(self):
+        super(LeNet, self).__init__()
+        self.cnn1 = nn.Conv2d(
+            in_channels=3, out_channels=16, kernel_size=5, stride=1, padding=0
+        )
+        self.relu1 = nn.ReLU()
+        self.maxpool1 = nn.MaxPool2d(kernel_size=2)
+        self.cnn2 = nn.Conv2d(
+            in_channels=16, out_channels=32, kernel_size=5, stride=1, padding=0
+        )
+        self.relu2 = nn.ReLU()  # activation
+        self.maxpool2 = nn.MaxPool2d(kernel_size=2)
+        self.fc1 = nn.Linear(107648, 512)  # 32*53*53
+        self.relu5 = nn.ReLU()
+        self.fc2 = nn.Linear(512, 2)
+        self.output = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        out = self.cnn1(x)
+        out = self.relu1(out)
+        out = self.maxpool1(out)
+        out = self.cnn2(out)
+        out = self.relu2(out)
+        out = self.maxpool2(out)
+        out = out.view(out.size(0), -1)
+        out = self.fc1(out)
+        out = self.fc2(out)
+        out = self.output(out)
+        return out
+
+
+model = Lenet()
+print(model)
+
+from torchsummary import summary
+
+summary(model, input_size=(3, 244, 244))
