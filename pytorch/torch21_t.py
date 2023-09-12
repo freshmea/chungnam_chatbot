@@ -152,3 +152,29 @@ res.to_csv("../chap06/data/LesNet.csv", index=False)
 
 
 res.head(10)
+
+
+class_ = classes = {0: "cat", 1: "dog"}
+
+
+def display_image_grid(images_filepaths, predicted_labels=(), cols=5):
+    rows = len(images_filepaths) // cols
+    figure, ax = plt.subplots(nrows=rows, ncols=cols, figsize=(12, 6))
+    for i, image_filepath in enumerate(images_filepaths):
+        image = cv2.imread(image_filepath)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+
+        a = random.choice(res["id"].values)
+        label = res.loc[res["id"] == a, "label"].values[0]
+        if label > 0.5:
+            label = 1
+        else:
+            label = 0
+        ax.ravel()[i].imshow(image)
+        ax.ravel()[i].set_title(class_[label])
+        ax.ravel()[i].set_axis_off()
+    plt.tight_layout()
+    plt.show()
+
+
+display_image_grid(test_images_filepaths)

@@ -1,12 +1,12 @@
 # 1 번 셀 --------------------------------
 # import copy
 # import shutil
-# import pandas as pd
 # import glob
 # import numpy as np
 # from torchvision.transforms import ToTensor
 # import torchvision.models as models
 
+import pandas as pd
 import time
 import torch
 import torchvision
@@ -19,7 +19,8 @@ import torch.nn as nn
 import os
 import cv2
 from PIL import Image
-from tqdm.notebook import tqdm_notebook
+
+# from tqdm.notebook import tqdm_notebook
 from tqdm import tqdm
 import random
 import matplotlib.pyplot as plt
@@ -264,3 +265,33 @@ def train_model(model, dataloader_dict, criterion, optimizer, num_epoch):
 
 num_epoch = 10
 model = train_model(model, dataloader_dict, criterion, optimizer, num_epoch)
+
+
+# 13 번 셀 ---------------------------------
+id_list = []
+pred_list = []
+_id = 0
+
+with torch.no_grad():
+    for test_path in tqdm(test_image_filepaths):
+        img = Image.open(test_path)
+        _id = test_path.split("\\")[-1].split(".")[1]
+        transform = ImageTransform(size, mean, std)
+        img = transform(img, phase="val")
+        img = img.unsqueeze(0)
+        img = img.to(device)
+
+        model.eval()
+        outputs = model(img)
+        preds = F.softmax(outputs, dim=1)[:, 1].tolist()
+        id_list.append(_id)
+        pred_list.append(preds[0])
+
+res = pd.DataFrame({"id": id_list, "label": pred_list})
+
+res.sort_values(by="id", inplace=True)
+res.reset_index(drop=True, inplace=True)
+
+res.to_csv(r"C:\chungnam_chatbot\pytorch\data", index=False)
+
+res.head()
