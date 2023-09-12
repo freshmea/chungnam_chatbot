@@ -192,7 +192,7 @@ class AlexNet(nn.Module):
     def forward(self, x):
         x = self.features(x)
         x = self.avgpool(x)
-        x = torch.flatten(x)
+        x = torch.flatten(x, 1)
         x = self.classifier(x)
         return x
 
@@ -303,7 +303,7 @@ res.reset_index(drop=True, inplace=True)
 
 res.to_csv(r"C:\chungnam_chatbot\pytorch\data", index=False)
 
-res.head()
+res.head(10)
 
 # 14 번 셀 ---------------------------------
 class_ = Classes = {0: "cat", 1: "dog"}
@@ -315,9 +315,6 @@ def display_image_grid2(images_filepaths, predicted_labels=(), cols=5):
     for i, image_filepath in enumerate(images_filepaths):
         image = cv2.imread(image_filepath)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        # true_label = os.path.normpath(image_filepath).split(os.sep)[-2]
-        # predicted_label = predicted_labels[i] if predicted_labels else true_label
-        # color = "green" if true_label == predicted_label else "red"
         a = random.choice(res["id"].values)
         label = res.loc[res["id"] == a, "label"].values[0]
         if label > 0.5:
