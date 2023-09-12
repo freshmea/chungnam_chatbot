@@ -20,6 +20,7 @@ import os
 import cv2
 from PIL import Image
 from tqdm.notebook import tqdm_notebook
+from tqdm import tqdm
 import random
 import matplotlib.pyplot as plt
 from torchsummary import summary
@@ -192,6 +193,8 @@ model.to(device)
 print(model)
 
 # 10 번 셀 --------------------------------
+
+# mat 갯수가 달라지는 애러 발생.
 # summary(model, input_size=(3, 244, 244))
 
 
@@ -226,7 +229,9 @@ def train_model(model, dataloader_dict, criterion, optimizer, num_epoch):
 
             epoch_loss = 0.0
             epoch_corrects = 0
-            for inputs, labels in dataloader_dict[phase]:
+
+            # tqdm 실행 안됨.
+            for inputs, labels in tqdm(dataloader_dict[phase]):
                 inputs = inputs.to(device)
                 labels = labels.to(device)
                 optimizer.zero_grad()
