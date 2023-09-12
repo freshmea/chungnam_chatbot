@@ -10,13 +10,31 @@ import torchvision.transforms as transforms
 from torch.utils.data import Dataset, DataLoader
 
 print(torch.cuda.is_available())
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-train_dataset = torchvision.datasets.FashionMNIST('pytorch/data', download=True, transform=transforms.Compose([transforms.ToTensor()]))
-test_dataset = torchvision.datasets.FashionMNIST('pytorch/data', download=True, train=False, transform=transforms.Compose([transforms.ToTensor()]))
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+train_dataset = torchvision.datasets.FashionMNIST(
+    "pytorch/data", download=True, transform=transforms.Compose([transforms.ToTensor()])
+)
+test_dataset = torchvision.datasets.FashionMNIST(
+    "pytorch/data",
+    download=True,
+    train=False,
+    transform=transforms.Compose([transforms.ToTensor()]),
+)
 train_loader = DataLoader(train_dataset, batch_size=100)
 test_loader = DataLoader(test_dataset, batch_size=100)
 
-label_map = { 0:'T-Shirt', 1:'Trouser', 2:'Pullover', 3:'Dress', 4:'Coat', 5:'Sandal', 6:'Shirt', 7:'Sneaker', 8:'Bag', 9:'Ankle Boot'}
+label_map = {
+    0: "T-Shirt",
+    1: "Trouser",
+    2: "Pullover",
+    3: "Dress",
+    4: "Coat",
+    5: "Sandal",
+    6: "Shirt",
+    7: "Sneaker",
+    8: "Bag",
+    9: "Ankle Boot",
+}
 
 # 시각적 표현
 # fig = plt.figure(figsize=(8,8))
@@ -31,6 +49,7 @@ label_map = { 0:'T-Shirt', 1:'Trouser', 2:'Pullover', 3:'Dress', 4:'Coat', 5:'Sa
 #     plt.imshow(img, cmap='gray')
 # plt.show()
 
+
 class FashionDNN(nn.Module):
     def __init__(self):
         super().__init__()
@@ -38,11 +57,11 @@ class FashionDNN(nn.Module):
         self.drop = nn.Dropout(0.25)
         self.fc2 = nn.Linear(256, 128)
         self.fc3 = nn.Linear(128, 10)
-    
+
     def forward(self, input_data):
         out = input_data.view(-1, 784)
         # print(out.shape)
-        
+
         # out = self.fc1(out)
         # out = F.relu(out)
         out = F.relu(self.fc1(out))
@@ -50,6 +69,7 @@ class FashionDNN(nn.Module):
         out = F.relu(self.fc2(out))
         out = self.fc3(out)
         return out
+
 
 learning_rate = 0.001
 model = FashionDNN()
@@ -95,12 +115,12 @@ for epoch in range(num_epochs):
                 predictions_list.append(predictions)
                 correct += (predictions == labels).sum()
                 total += len(labels)
-    
+
             accuracy = correct * 100 / total
             loss_list.append(loss.data)
             iteration_list.append(count)
             accuracy_list.append(accuracy)
-            
+
         if not (count % 500):
-            print(f'Iteration: {count}, Loss: {loss.data}, Accuracy: {accuracy}')
+            print(f"Iteration: {count}, Loss: {loss.data}, Accuracy: {accuracy}")
 print(count)

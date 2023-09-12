@@ -8,10 +8,10 @@ from sklearn.preprocessing import StandardScaler, normalize
 from sklearn.cluster import DBSCAN
 from sklearn.decomposition import PCA
 
-X = pd.read_csv('pytorch/data/credit card.csv')
+X = pd.read_csv("pytorch/data/credit card.csv")
 
-X.drop('CUST_ID', axis=1, inplace=True)
-X.fillna(method='ffill', inplace=True)
+X.drop("CUST_ID", axis=1, inplace=True)
+X.fillna(method="ffill", inplace=True)
 print(X.head())
 
 scalar = StandardScaler()
@@ -23,7 +23,7 @@ pca = PCA(n_components=2)
 X_principal = pca.fit_transform(X_normalized)
 print(type(X_principal))
 X_principal = pd.DataFrame(X_principal)
-X_principal.columns = ['P1', 'P2']
+X_principal.columns = ["P1", "P2"]
 print(X_principal.head())
 
 # db_default = DBSCAN(eps= 0.0375, min_samples=3).fit(X_principal)
@@ -42,25 +42,28 @@ print(X_principal.head())
 # plt.legend((r, g, b, k), ('label 0', 'label 1', 'label 2', 'label 3'))
 # plt.show()
 
-db_default = DBSCAN(eps= 0.0375, min_samples=50).fit(X_principal)
+db_default = DBSCAN(eps=0.0375, min_samples=50).fit(X_principal)
 labels = db_default.labels_
 
-colours = {0:'r', 1:'g', 2:'b', 3:'c', 4:'y', 5:'m', -1:'k'}
+colours = {0: "r", 1: "g", 2: "b", 3: "c", 4: "y", 5: "m", -1: "k"}
 cvec = [colours[label] for label in labels]
 # colors1 = ['r', 'g', 'b', 'c', 'y', 'm', 'k']
-colors1 =list('rgbcymk')
+colors1 = list("rgbcymk")
 scatter_li = []
 for c in colors1:
-    scatter_li.append(plt.scatter(X_principal['P1'], X_principal['P2'], marker = 'o' ,color = c))
+    scatter_li.append(
+        plt.scatter(X_principal["P1"], X_principal["P2"], marker="o", color=c)
+    )
 
-plt.figure(figsize=(9,9))
-plt.scatter(X_principal['P1'], X_principal['P2'], c = cvec)
+plt.figure(figsize=(9, 9))
+plt.scatter(X_principal["P1"], X_principal["P2"], c=cvec)
 
 plt.legend(
     (tuple([sc for sc in scatter_li])),
-    ('label 0', 'label 1', 'label 2', 'label 3','label 4', 'label 5', 'label -1'),
-    scatterpoints = 1,
-    loc = 'upper left',
-    ncol = 3,
-    fontsize = 8)
+    ("label 0", "label 1", "label 2", "label 3", "label 4", "label 5", "label -1"),
+    scatterpoints=1,
+    loc="upper left",
+    ncol=3,
+    fontsize=8,
+)
 plt.show()
