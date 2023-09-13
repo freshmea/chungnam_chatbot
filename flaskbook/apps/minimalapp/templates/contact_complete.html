@@ -4,11 +4,20 @@
 <head>
     <meta charset="UTF-8" />
     <title>Name</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css' ) }}" />
 </head>
 
 <body>
-    <h2 align="center">문의 완료 {{ name }}</h4>
+    <h2 align="center">문의 완료 {{ name }}</h2>
+    {% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <ul>
+        {% for message in messages %}
+        <li class="flash">{{ message }} </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+    {% endwith %}
 </body>
 
 </html>
