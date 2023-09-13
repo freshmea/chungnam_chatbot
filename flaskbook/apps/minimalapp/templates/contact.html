@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Name</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+
+<body>
+    <h2> 문의 폼 </h2>
+    <form action=" {{ url_for('contact_complete' )}} " method="POST" novalidate="novalidate">
+        <table>
+            <tr>
+                <td>사용자명</td>
+                <td>
+                    <input type="text" name="username" value="{{username}}" placeholder="사용자명" />
+                </td>
+            </tr>
+            <tr></tr>
+            <tr></tr>
+        </table>
+    </form>
+</body>
+
+</html>
