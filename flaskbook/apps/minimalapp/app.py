@@ -10,10 +10,16 @@ from flask import (
     flash,
 )
 from email_validator import validate_email, EmailNotValidError
+import logging
+from flask_debugtoolbar import DebugToolbarExtension
 
 app = Flask(__name__)
+
+toolbar = DebugToolbarExtension(app)
 # add config key
 app.config["SECRET_KEY"] = "9sfno39asf8nk32"
+app.config["DEBUG_TB_INTERCEPT_REDIRECTS"] = False
+app.logger.setLevel(logging.DEBUG)
 
 
 @app.route("/")
@@ -43,32 +49,27 @@ def contact_complete():
         email = request.form["email"]
         description = request.form["description"]
 
-        is_valid = True
-
-        if not username:
-            flash("사용자명은 필수입니다.")
-            is_valid = False
-        if not email:
-            flash("이메일은 필수입니다.")
-            is_valid = False
-
         try:
+            if not username:
+                flash("사용자명은 필수입니다.")
+                raise Exception
+            if not email:
+                flash("이메일은 필수입니다.")
+                raise Exception
+            if not description:
+                flash("문의 내용은 필수입니다.")
+                raise Exception
             validate_email(email)
         except EmailNotValidError:
             flash("메일 주소가 형식이 올바르지 않습니다.")
-            is_valid = False
-
-        if not description:
-            flash("문의 내용은 필수입니다.")
-            is_valid = False
-
-        if not is_valid:
             return redirect(url_for("contact"))
+        except Exception:
+            return redirect(url_for("contact"))
+        else:
+            # contact 로 리다이렉트 하기
+            flash("문의해 주셔서 감사합니다.")
+            return redirect(url_for("contact_complete"))
 
         # 이메일 보내기
-
-        # contact 로 리다이렉트 하기
-        flash("문의해 주셔서 감사합니다.")
-        return redirect(url_for("contact_complete"))
 
     return render_template("contact_complete.html")
