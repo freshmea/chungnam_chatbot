@@ -3,7 +3,7 @@ from apps.app import db
 from werkzeug.security import generate_password_hash
 
 
-class user(db.Model):
+class User(db.Model):
     __tablename__ = "users"
 
     # column

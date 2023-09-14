@@ -14,6 +14,7 @@ def create_app():
         SECRET_KEY="48jjhbwye09asv7ke",
         SQLALCHEMY_DATABASE_URI=f"sqlite:///{Path(__file__).parent.parent / 'local.sqlite'}",
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        SQLALCHEMY_ECHO=True,
     )
     db.init_app(app)
     Migrate(app, db)
