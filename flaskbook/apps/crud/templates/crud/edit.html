@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>사용자 편집</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css' ) }}" />
+</head>
+
+<body>
+    <h2>사용자편집</h2>
+
+    <form action="{{ url_for('crud.edit_user', user_id=user.id)}}" method="POST" novalidate="novalidate">
+        {{ form.csrf_token }}
+
+        <p>
+            {{ form.username.label }} {{ form.username(placeholder="사용자명", value=user.username) }}
+        </p>
+
+        {% for error in form.username.errors %}
+        <span style="color: red;">{{ error }}</span>
+        {% endfor %}
+
+        <p>
+            {{ form.email.label }} {{ form.email(placeholder="메일 주소", value=user.email)}}
+        </p>
+
+        {% for error in form.username.errors %}
+        <span style="color: red;">{{ error }}</span>
+        {% endfor %}
+
+        <p>
+            {{ form.password.label }} {{ form.password(placeholder="비밀번호")}}
+        </p>
+
+        {% for error in form.username.errors %}
+        <span style="color: red;">{{ error }}</span>
+        {% endfor %}
+
+        <p><input type="submit" value="갱신" /></p>
+    </form>
+</body>
+
+</html>
