@@ -1,44 +1,35 @@
-<!DOCTYPE html>
-<html lang="ko">
+{% extends "crud/base.html" %}
+{% block title %}사용자 신규 작성{% endblock %}
 
-<head>
-    <meta charset="UTF-8" />
-    <title>사용자 신규 작성</title>
-    <link rel="stylesheet" href="{{ url_for('crud.static', filename='style.css' ) }}" />
-</head>
+{% block content %}
+<h2>사용자 신규 작성</h2>
+<form action="{{ url_for('crud.create_user') }}" method="POST" novalidate="novalidate">
+    {{ form.csrf_token }}
 
-<body>
-    <h2>사용자 신규 작성</h2>
-    <form action="{{ url_for('crud.create_user') }}" method="POST" novalidate="novalidate">
-        {{ form.csrf_token }}
+    <p>
+        {{ form.username.label }} {{ form.username(placeholder="사용자명")}}
+    </p>
 
-        <p>
-            {{ form.username.label }} {{ form.username(placeholder="사용자명")}}
-        </p>
+    {% for error in form.username.errors %}
+    <span style="color: red;">{{ error }}</span>
+    {% endfor %}
 
-        {% for error in form.username.errors %}
-        <span style="color: red;">{{ error }}</span>
-        {% endfor %}
+    <p>
+        {{ form.email.label }} {{ form.email(placeholder="메일 주소")}}
+    </p>
 
-        <p>
-            {{ form.email.label }} {{ form.email(placeholder="메일 주소")}}
-        </p>
+    {% for error in form.username.errors %}
+    <span style="color: red;">{{ error }}</span>
+    {% endfor %}
 
-        {% for error in form.username.errors %}
-        <span style="color: red;">{{ error }}</span>
-        {% endfor %}
+    <p>
+        {{ form.password.label }} {{ form.password(placeholder="비밀번호")}}
+    </p>
 
-        <p>
-            {{ form.password.label }} {{ form.password(placeholder="비밀번호")}}
-        </p>
+    {% for error in form.username.errors %}
+    <span style="color: red;">{{ error }}</span>
+    {% endfor %}
 
-        {% for error in form.username.errors %}
-        <span style="color: red;">{{ error }}</span>
-        {% endfor %}
-
-        <p>{{ form.submit() }}</p>
-    </form>
-
-</body>
-
-</html>
+    <p>{{ form.submit() }}</p>
+</form>
+{% endblock %}

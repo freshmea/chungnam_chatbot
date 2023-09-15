@@ -1,27 +1,18 @@
 from flask import Flask
-from pathlib import Path
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
+from apps.config import config
 
 db = SQLAlchemy()
 csrf = CSRFProtect()
 
 
-def create_app():
+def create_app(config_key):
     app = Flask(__name__)
-
-    # app.config['SECRET_KEY'] = '48jjhbwye09asv7ke'
-    app.config.from_mapping(
-        SECRET_KEY="48jjhbwye09asv7ke",
-        SQLALCHEMY_DATABASE_URI=f"sqlite:///{Path(__file__).parent.parent / 'local.sqlite'}",
-        SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        SQLALCHEMY_ECHO=True,
-        WTF_CSRF_SECRET_KEY="Audfweoinkjl34d",
-    )
+    app.config.from_object(config[config_key])
     csrf.init_app(app)
     db.init_app(app)
-
     Migrate(app, db)
     from apps.crud import views as crud_views
 
