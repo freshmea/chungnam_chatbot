@@ -18,7 +18,7 @@
         {{ form.email.label }} {{ form.email(placeholder="메일 주소")}}
     </p>
 
-    {% for error in form.username.errors %}
+    {% for error in form.email.errors %}
     <span style="color: red;">{{ error }}</span>
     {% endfor %}
 
@@ -26,7 +26,7 @@
         {{ form.password.label }} {{ form.password(placeholder="비밀번호")}}
     </p>
 
-    {% for error in form.username.errors %}
+    {% for error in form.password.errors %}
     <span style="color: red;">{{ error }}</span>
     {% endfor %}
 
