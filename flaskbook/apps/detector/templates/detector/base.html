@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8" />
+
+    <title>{% block title %} {% endblock %}</title>
+    <link rel="stylesheet" href="{{url_for('static', filenmae='css/bootstrap.min.css')}}" />
+    <link rel="stylesheet" href="{{url_for('static', filenmae='css/style.css')}}" />
+</head>
+
+<body>
+    <div>
+        {% if current_user.is_authenticated %}
+        <p>
+            <span>{{ current_user.username }}</span>
+            <span><a href="{{ url_for('auth.logout') }}">로그아웃</a></span>
+        </p>
+        {% endif %}
+    </div>
+    {% block content %} {% endblock %}
+</body>
+
+</html>
