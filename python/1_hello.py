@@ -1,8 +1,8 @@
-# 연속으로 hello, python을 출력하는 코드
-# input으로 받은 숫자만큼 반복하여 출력한다.
-# 2023.09.19
 # author: choi sugil
-# license: MIT
+# date: 2023.09.19 version: 1.0.0 license: MIT brief: keyward
+# description: hello, python! 출력하기
+
+
 def main():
     input_num = int(input("반복할 횟수를 입력하세요: "))
     for _ in range(input_num):

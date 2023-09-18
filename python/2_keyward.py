@@ -1,6 +1,6 @@
 # author: choi sugil
-# date: 2019.12.02 version: 1.0.0 license: MIT brief: keyward
-
+# date: 2023.09.19 version: 1.0.0 license: MIT brief: keyward
+# description: 키워드 출력하기
 import keyword
 
 
