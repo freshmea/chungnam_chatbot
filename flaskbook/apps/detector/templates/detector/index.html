@@ -3,5 +3,13 @@
 {% block title %}detector{% endblock %}
 
 {% block content %}
-<div class="alert alert-primary">detector</div>
+
+{% for user_image in user_images %}
+<div class="card col-md-7 dt-image-content">
+    <section>
+        <img src="{{ user_image.UserImage.image_url }}" alt="이미지" />
+    </section>
+</div>
+{% endfor %}
+
 {% endblock %}

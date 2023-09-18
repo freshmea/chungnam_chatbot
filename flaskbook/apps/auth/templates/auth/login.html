@@ -1,32 +1,22 @@
-{% extends "auth/base.html" %}
+{% extends "detector/base.html" %}
 
 {% block title %}로그인{% endblock %}
 
 {% block content %}
-<form action="{{ url_for('auth.login') }}" method="post" novalidate='novalidate'>
-    {% for message in get_flashed_messages() %}
-    <p style="color: red;">{{ message }}</p>
-    {% endfor %}
-    {{ form.csrf_token }}
-    
-    <p>
-        {{ form.email.label }}
-        {{ form.email(placeholder="메일 주소")}}
-    </p>
-
-    {% for error in form.email.errors %}
-    <span style="color: red;">{{ error }}</span>
-    {% endfor %}
-
-    <p>
-        {{ form.password.label }}
-        {{ form.password(placeholder="비밀번호")}}
-    </p>
-
-    {% for error in form.password.errors %}
-    <span style="color: red;">{{ error }}</span>
-    {% endfor %}
-
-    <p>{{ form.submit() }}</p>
-</form>
+<div class="mx-auto dt-auth-main">
+    <div class="card dt-auth-login">
+        <header>로그인</header>
+        <section>
+            <form action="{{ url_for('auth.login') }}" method="POST">
+                {{ form.csrf_token }}
+                {% for message in get_flashed_messages() %}
+                <div class="dt-auth-flash">{{ message }}</div>
+                {% endfor %}
+                {{ form.email(class="form-control dt-auth-input", placeholder="메일 주소")}}
+                {{ form.password(class="form-control dt-auth-input", placeholder="비밀번호")}}
+                {{ form.submit(class="btn btn-md btn-primary btn-block dt-auth-btn") }}
+            </form>
+        </section>
+    </div>
+</div>
 {% endblock %}
