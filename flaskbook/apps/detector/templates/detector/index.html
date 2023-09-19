@@ -1,13 +1,19 @@
 {% extends "detector/base.html" %}
 
-{% block title %}detector{% endblock %}
-
 {% block content %}
-
+<!-- 이미지 업로드 화면으로의 링크를 추가한다.-->
+<div class="col-md-10 text-right dt-image-register-btn">
+    <a href="{{ url_for('detector.upload_image') }}" class="btn btn-primary">이미지 신규 등록</a>
+</div>
+<!-- 이미지 일람을 표시한다-->
 {% for user_image in user_images %}
 <div class="card col-md-7 dt-image-content">
+    <header class="d-flex justify-content-between">
+        <div class="dt-image-username">{{ user_image.User.username }}</div>
+        <div class="dt-image-username">{{ user_image.UserImage.image_path }}</div>
+    </header>
     <section>
-        <img src="{{ user_image.UserImage.image_url }}" alt="이미지" />
+        <img src="{{ url_for('detector.image_file', filename=user_image.UserImage.image_path) }}" alt="업로드 이미지" />
     </section>
 </div>
 {% endfor %}
