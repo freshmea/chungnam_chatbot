@@ -14,6 +14,27 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('detector.index') }}">detector</a>
+            <!-- 이미지 검색 폼-->
+            {% if url_for(request.endpoint) == url_for('detector.index') or url_for(request.endpoint) == url_for('detector.search') %}
+            <div class="btn-group">
+                <form action="{{ url_for('detector.search') }}" method="GET" name="dtSearchForm">
+                    {% if request.args.get("search") %}
+                    <input
+                        type="search"
+                        id="dt-search"
+                        class="form-control col-md-12 dt-search"
+                        placeholder="검색"
+                        name="search"
+                        value="{{ request.args.get('search') }}"/>
+                    {% else %}
+                    <input
+                        tyep="search"
+                        id="dt-search" class="form-control col-md-12 dt-search"
+                        placeholder="검색" name="search" />
+                    {% endif %}
+                </form>
+            </div>
+            {% endif %}
             <ul class="navbar-nav">
                 {% if current_user.is_authenticated %}
                 <li class="nav-item">
