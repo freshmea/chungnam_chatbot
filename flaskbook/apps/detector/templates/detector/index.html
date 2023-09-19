@@ -1,6 +1,18 @@
 {% extends "detector/base.html" %}
 
 {% block content %}
+
+<!-- flash 오류를 표시한다.-->
+{% with messages = get_flashed_messages() %}
+{% if messages %}
+<ul>
+    {% for message in messages %}
+    <li class="flash">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% endwith %}
+
 <!-- 이미지 업로드 화면으로의 링크를 추가한다.-->
 <div class="col-md-10 text-right dt-image-register-btn">
     <a href="{{ url_for('detector.upload_image') }}" class="btn btn-primary">이미지 신규 등록</a>
@@ -11,11 +23,27 @@
     <header class="d-flex justify-content-between">
         <div class="dt-image-username">{{ user_image.User.username }}</div>
         <div class="dt-image-username">{{ user_image.UserImage.image_path }}</div>
+        <div class="d-flex flex-row-reverse">
+            <div class="p-2">
+                <form action="{{ url_for('detector.detect', image_id=user_image.UserImage.id) }}" method="POST">
+                    {{ detector_form.csrf_token }}
+                    {% if current_user.id == user_image.User.id and user_image.UserImage.is_detected == False %}
+                    {{ detector_form.submit(class="btn btn-primary") }}
+                    {% else %}
+                    {{ detector_form.submit(class="btn btn-primary", disabled="disabled") }}
+                    {% endif %}
+                </form>
+            </div>
+        </div>
     </header>
     <section>
-        <img src="{{ url_for('detector.image_file', filename=user_image.UserImage.image_path) }}" alt="업로드 이미지" />
+        <img src="{{ url_for('detector.image_file', filename=user_image.UserImage.image_path) }}" alt="이미지" />
     </section>
+    <footer>
+        {% for tag in user_image_tag_dict[user_image.UserImage.id] %}
+            #{{tag.tag_name}}
+        {% endfor %}
+    </footer>
 </div>
 {% endfor %}
-
 {% endblock %}

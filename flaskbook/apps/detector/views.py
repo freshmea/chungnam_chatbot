@@ -10,7 +10,7 @@ from apps.app import db
 from apps.crud.models import User
 from apps.detector.models import UserImage
 from apps.detector.models import UserImageTag
-from apps.detector.forms import UploadImageForm
+from apps.detector.forms import UploadImageForm, DetectorForm
 from flask import (
     Blueprint,
     render_template,
@@ -34,7 +34,22 @@ def index():
         .filter(User.id == UserImage.user_id)
         .all()
     )
-    return render_template("detector/index.html", user_images=user_images)
+
+    user_image_tag_dict = {}
+    for user_image in user_images:
+        user_image_tags = (
+            db.session.query(UserImageTag)
+            .filter(UserImageTag.user_image_id == user_image.UserImage.id)
+            .all()
+        )
+        user_image_tag_dict[user_image.UserImage.id] = user_image_tags
+    detector_form = DetectorForm()
+    return render_template(
+        "detector/index.html",
+        user_images=user_images,
+        detector_form=detector_form,
+        user_image_tag_dict=user_image_tag_dict,
+    )
 
 
 @dt.route("/images/<path:filename>")
@@ -103,7 +118,7 @@ def exec_detect(target_image_path):
     labels = current_app.config["LABELS"]
     image = Image.open(target_image_path)
     image_tensor = F.to_tensor(image)
-    model = torch.load(current_app.root_path, "detector", "model.pt")
+    model = torch.load(Path(current_app.root_path, "detector", "model.pt"))
     model = model.eval()
     output = model([image_tensor])[0]
     tags = []
@@ -123,6 +138,7 @@ def exec_detect(target_image_path):
         Path(current_app.config["UPLOAD_FOLDER"], detected_image_file_name)
     )
     cv2.imwrite(detected_image_file_path, cv2.cvtColor(result_image, cv2.COLOR_RGB2BGR))
+    return tags, detected_image_file_name
 
 
 def save_detected_image_tags(user_image, tags, detected_image_file_name):
