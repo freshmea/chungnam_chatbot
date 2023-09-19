@@ -24,6 +24,18 @@
         <div class="dt-image-username">{{ user_image.User.username }}</div>
         <div class="dt-image-username">{{ user_image.UserImage.image_path }}</div>
         <div class="d-flex flex-row-reverse">
+            <!-- 삭제 버튼-->
+            <div class="p-2">
+                <form action="{{ url_for('detector.delete_image', image_id=user_image.UserImage.id) }}" method="POST">
+                    {{ delete_form.csrf_token }}
+                    {% if current_user.id == user_image.User.id %}
+                    {{ delete_form.submit(class="btn btn-primary") }}
+                    {% else %}
+                    {{ delete_form.submit(class="btn btn-primary", disabled="disabled") }}-
+                    {% endif %}
+                </form>
+            </div>
+            <!-- 디텍트 버튼-->
             <div class="p-2">
                 <form action="{{ url_for('detector.detect', image_id=user_image.UserImage.id) }}" method="POST">
                     {{ detector_form.csrf_token }}

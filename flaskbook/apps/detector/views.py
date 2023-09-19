@@ -10,7 +10,7 @@ from apps.app import db
 from apps.crud.models import User
 from apps.detector.models import UserImage
 from apps.detector.models import UserImageTag
-from apps.detector.forms import UploadImageForm, DetectorForm
+from apps.detector.forms import UploadImageForm, DetectorForm, DeleteForm
 from flask import (
     Blueprint,
     render_template,
@@ -19,6 +19,7 @@ from flask import (
     redirect,
     url_for,
     flash,
+    request,
 )
 from flask_login import current_user, login_required
 from sqlalchemy.exc import SQLAlchemyError
@@ -44,11 +45,13 @@ def index():
         )
         user_image_tag_dict[user_image.UserImage.id] = user_image_tags
     detector_form = DetectorForm()
+    delete_form = DeleteForm()
     return render_template(
         "detector/index.html",
         user_images=user_images,
         detector_form=detector_form,
         user_image_tag_dict=user_image_tag_dict,
+        delete_form=delete_form,
     )
 
 
@@ -169,3 +172,68 @@ def detect(image_id):
         current_app.logger.error(e)
         return redirect(url_for("detector.index"))
     return redirect(url_for("detector.index"))
+
+
+@dt.route("/delete/<string:image_id>", methods=["POST"])
+@login_required
+def delete_image(image_id):
+    # user_image_tags 테이블의 레코드 삭제
+    try:
+        db.session.query(UserImageTag).filter(
+            UserImageTag.user_image_id == image_id
+        ).delete()
+        db.session.query(UserImage).filter(UserImage.id == image_id).delete()
+        db.session.commit()
+    except SQLAlchemyError as e:
+        flash("물체 감지 처리에서 오류가 발생했습니다.")
+        current_app.logger.error(e)
+        db.session.rollback()
+        return redirect(url_for("detector.index"))
+    return redirect(url_for("detector.index"))
+
+
+@dt.route("/images/search", methods=["GET"])
+def search():
+    user_images = (
+        db.session.query(User, UserImage)
+        .join(UserImage, User.id == UserImage.user_id)
+        .all()
+    )
+    search_text = request.args.get("search")
+    user_image_tag_dict = {}
+    filtered_user_images = []
+
+    for user_image in user_images:
+        if not search_text:
+            user_image_tags = (
+                db.session.query(UserImageTag)
+                .filter(UserImageTag.user_image_id == user_image.UserImage.id)
+                .all()
+            )
+        else:
+            user_image_tags = (
+                db.session.query(UserImageTag)
+                .filter(
+                    UserImageTag.user_image_id == user_image.UserImage.id,
+                    UserImageTag.tag_name == search_text,
+                )
+                .all()
+            )
+            if not user_image_tags:
+                continue
+            user_image_tags = (
+                db.session.query(UserImageTag)
+                .filter(UserImageTag.user_image_id == user_image.UserImage.id)
+                .all()
+            )
+        user_image_tag_dict[user_image.UserImage.id] = user_image_tags
+        filtered_user_images.append(user_image)
+    delete_form = DeleteForm()
+    detector_form = DetectorForm()
+    return render_template(
+        "detector/index.html",
+        user_images=filtered_user_images,
+        user_image_tag_dict=user_image_tag_dict,
+        delete_form=delete_form,
+        detector_form=detector_form,
+    )
