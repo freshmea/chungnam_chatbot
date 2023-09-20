@@ -62,3 +62,65 @@ class BasicRNN(nn.Module):
     def _init_state(self, batch_size=1):
         weight = next(self.parameters()).data
         return weight.new(self.n_layers, batch_size, self.hidden_dim).zero_()
+
+
+# 7번 셀
+model = BasicRNN(
+    n_layers=1,
+    hidden_dim=256,
+    n_vocab=vocab_size,
+    embed_dim=128,
+    n_classes=n_classes,
+    dropout_p=0.5,
+).to(device)
+
+loss_fn = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+
+
+# 8번 셀
+def train(epoch, model, optimizer, train_iter):
+    model.train()
+    for b, batch in enumerate(train_iter):
+        x, y = batch.text.to(device), batch.label.to(device)
+        y.data.sub_(1)
+        optimizer.zero_grad()
+
+        logit = model(x)
+        loss = F.cross_entropy(logit, y)
+        loss.backward()
+        optimizer.step()
+        if b % 50 == 0:
+            print(f"Train Epoch: {epoch} [{b * len(x)}/{len(train_iter.dataset)} ")
+            print(f"({len(train_iter.dataset):.0f}%)]\tLoss: {loss.item():.6f}")
+
+
+# 9번 셀
+def evaluate(model, val_iter):
+    model.eval()
+    corrects, total, total_loss = 0, 0, 0
+
+    for batch in val_iter:
+        x, y = batch.text.to(device), batch.label.to(device)
+        y.data.sub_(1)
+        logit = model(x)
+        loss = F.cross_entropy(logit, y, reduction="sum")
+        total += y.size(0)
+        total_loss += loss.item()
+        corrects += (logit.max(1)[1].view(y.size()).data == y.data).sum()
+
+    avg_loss = total_loss / len(val_iter.dataset)
+    avg_accuracy = corrects / total
+    return avg_loss, avg_accuracy
+
+
+# 10번 셀
+BATCH_SIZE = 100
+LR = 0.001
+EPOCHS = 5
+for e in range(1, EPOCHS + 1):
+    train(e, model, optimizer, train_iter)
+    valid_loss, valid_accuracy = evaluate(model, valid_iter)
+    print(
+        f"\n[epoch: {e:3d}] Validation_loss: {valid_loss:4.2f} | Validation_acc: {valid_accuracy:4.2f}"
+    )
