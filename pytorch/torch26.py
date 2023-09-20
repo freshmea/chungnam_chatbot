@@ -40,3 +40,18 @@ valid_dataset = MNIST(
 test_dataset = MNIST(
     download_root, transform=mnist_transform, train=False, download=True
 )
+
+# 4
+batch_size = 64
+train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
+valid_loader = DataLoader(dataset=valid_dataset, batch_size=batch_size, shuffle=True)
+test_loader = DataLoader(dataset=test_dataset, batch_size=batch_size, shuffle=True)
+
+# 5
+batch_size = 100
+n_iters = 6000
+num_epochs = n_iters / (len(train_dataset) / batch_size)
+num_epochs = int(num_epochs)
+print(len(train_dataset), batch_size, num_epochs)
+
+# 6
