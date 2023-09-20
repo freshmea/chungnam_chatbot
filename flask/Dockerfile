@@ -1,4 +1,4 @@
-FROM python:3.11.4
+FROM python:3.10.7
 
 RUN apt-get update && apt-get install -y sqlite3 && apt-get install -y libsqlite3-dev
 
