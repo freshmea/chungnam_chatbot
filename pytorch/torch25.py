@@ -1,7 +1,6 @@
 # 1번 셀
 import torch
 import torchtext
-import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 import time
@@ -91,7 +90,9 @@ def train(epoch, model, optimizer, train_iter):
         loss.backward()
         optimizer.step()
         if b % 50 == 0:
-            print(f"Train Epoch: {epoch} [{b * len(x)}/{len(train_iter.dataset)} ")
+            print(
+                f"Train Epoch: {epoch} [{b * len(x)}/{len(train_iter.dataset)} ", end=""
+            )
             print(f"({len(train_iter.dataset):.0f}%)]\tLoss: {loss.item():.6f}")
 
 
@@ -121,6 +122,5 @@ EPOCHS = 5
 for e in range(1, EPOCHS + 1):
     train(e, model, optimizer, train_iter)
     valid_loss, valid_accuracy = evaluate(model, valid_iter)
-    print(
-        f"\n[epoch: {e:3d}] Validation_loss: {valid_loss:4.2f} | Validation_acc: {valid_accuracy:4.2f}"
-    )
+    print(f"\n[epoch: {e:3d}] Validation_loss: {valid_loss:4.2f}", end="")
+    print(f"| Validation_acc: {valid_accuracy:4.2f}")
