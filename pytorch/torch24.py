@@ -145,3 +145,66 @@ def training(epoch, model, trainloader, validloader):
         f"valid acc: {epoch_valid_acc:.4f}",
     )
     return epoch_loss, epoch_acc, epoch_valid_loss, epoch_valid_acc
+
+
+# 13 번 셀
+epochs = 5
+train_loss = []
+train_acc = []
+valid_loss = []
+valid_acc = []
+
+start = time.time()
+for epoch in range(epochs):
+    loss, acc, v_loss, v_acc = training(epoch, model, train_iter, valid_iter)
+    train_loss.append(loss)
+    train_acc.append(acc)
+    valid_loss.append(v_loss)
+    valid_acc.append(v_acc)
+
+end = time.time()
+print(end - start)
+
+
+# 14번 셀
+def evaluate(epoch, model, testloader):
+    test_correct = 0
+    test_total = 0
+    test_running_loss = 0
+
+    model.eval()
+    with torch.no_grad():
+        for b in testloader:
+            x, y = b.text, b.label
+            x, y = x.to(device), y.to(device)
+            y_pred = model(x)
+            loss = loss_fn(y_pred, y)
+            predicted = torch.argmax(y_pred, dim=1)
+            test_correct += (predicted == y).sum().item()
+            test_total += y.size(0)
+            test_running_loss += loss.item()
+
+    epoch_test_loss = test_running_loss / len(testloader)
+    epoch_test_acc = test_correct / test_total
+
+    print(
+        f"epoch: {epoch}",
+        f"test loss: {epoch_test_loss:.4f}",
+        f"test acc: {epoch_test_acc:.4f}",
+    )
+    return epoch_test_loss, epoch_test_acc
+
+
+# 15번 셀
+start = time.time()
+epochs = 5
+test_loss = []
+test_acc = []
+
+for epoch in range(epoch):
+    loss, acc = evaluate(epoch, model, test_iter)
+    test_loss.append(loss)
+    test_acc.append(acc)
+
+end = time.time()
+print(end - start)
