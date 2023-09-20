@@ -27,6 +27,38 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 train_iter, valid_iter, test_iter = torchtext.data.BucketIterator.splits(
     (train_data, valid_data, test_data),
     batch_size=BATCH_SIZE,
-    shuffle=True,
-    repeat=False,
+    device=device,
 )
+
+# 5번 셀
+vocab_size = len(TEXT.vocab)
+n_classes = 2
+
+
+# 6번 셀
+class BasicRNN(nn.Module):
+    def __init__(
+        self, n_layers, hidden_dim, n_vocab, embed_dim, n_classes, dropout_p=0.2
+    ):
+        super().__init__()
+        self.n_layers = n_layers
+        self.embed = nn.Embedding(n_vocab, embed_dim)
+        self.hidden_dim = hidden_dim
+        self.dropout = nn.Dropout(dropout_p)
+        self.rnn = nn.RNN(
+            embed_dim, self.hidden_dim, num_layers=self.n_layers, batch_first=True
+        )
+        self.out = nn.Linear(self.hidden_dim, n_classes)
+
+    def forward(self, x):
+        x = self.embed(x)
+        h_0 = self._init_state(batch_size=x.size(0))
+        x, _ = self.rnn(x, h_0)
+        h_t = x[:, -1, :]
+        self.dropout(h_t)
+        logit = torch.sigmoid(self.out(h_t))
+        return logit
+
+    def _init_state(self, batch_size=1):
+        weight = next(self.parameters()).data
+        return weight.new(self.n_layers, batch_size, self.hidden_dim).zero_()
