@@ -13,7 +13,9 @@ import math
 
 # 2
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+print(device)
 cuda = True if torch.cuda.is_available() else False
+print(cuda)
 Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 
 torch.manual_seed(125)
@@ -135,15 +137,9 @@ loss_list = []
 iter = 0
 for epoch in range(num_epochs):
     for i, (images, labels) in enumerate(train_loader):
-        if torch.cuda.is_available():
-            images = Variable(images.view(-1, seq_dim, input_dim).cuda())
-            labels = Variable(labels.cuda())
-        else:
-            images = Variable(images.view(-1, seq_dim, input_dim))
-            labels = Variable(labels)
-        imgages = images.view(-1, seq_dim, input_dim).to(device)
+        images = images.view(-1, seq_dim, input_dim).to(device)
         labels = Variable(labels).to(device)
-
+        print(images, labels)
         optimizer.zero_grad()
         outputs = model(images)
         loss = criterion(outputs, labels)
@@ -154,17 +150,11 @@ for epoch in range(num_epochs):
             correct = 0
             total = 0
             for images, labels in valid_loader:
-                if torch.cuda.is_available():
-                    images = Variable(images.view(-1, seq_dim, input_dim).cuda())
-                else:
-                    images = Variable(images.view(-1, seq_dim, input_dim))
+                images = images.to(device)
                 outputs = model(images)
                 _, predicted = torch.max(outputs.data, 1)
                 total += labels.size(0)
-                if torch.cuda.is_available():
-                    correct += (predicted.cpu() == labels.cpu()).sum()
-                else:
-                    correct += (predicted == labels).sum()
+                correct += (predicted.cpu() == labels).sum()
             accuracy = 100 * correct / total
             loss_list.append(loss.data)
             print(
