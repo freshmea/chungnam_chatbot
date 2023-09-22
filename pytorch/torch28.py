@@ -2,26 +2,27 @@
 import torch
 import torch.nn as nn
 import torchvision.transforms as transforms
-import torchvision.datasets as dataset
+
+# import torchvision.datasets as dataset
 from torch.autograd import Variable
-from torch.nn import Parameter
-from torch import Tensor
+
+# from torch.nn import Parameter
+# from torch import Tensor
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
 import math
+from torchvision.datasets import MNIST
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 cuda = True if torch.cuda.is_available() else False
 
-Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
+# Tensor = torch.cuda.FloatTensor if cuda else torch.FloatTensor
 
 # 2
-
 mnist_transform = transforms.Compose(
     [transforms.ToTensor(), transforms.Normalize((0.5,), (1.0,))]
 )
 
-from torchvision.datasets import MNIST
 
 download_root = "data/MNIST_DATASET"
 

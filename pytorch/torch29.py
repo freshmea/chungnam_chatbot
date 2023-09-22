@@ -77,7 +77,7 @@ print("Testing Shape", X_test_tensors_f.shape, y_test_tensors.shape)
 # nn.LSTM
 
 
-class LSTMModule(nn.Module):
+class GRUModule(nn.Module):
     def __init__(self, num_classes, input_size, hidden_size, num_layers, seq_length):
         super().__init__()
         self.num_classes = num_classes
@@ -86,7 +86,7 @@ class LSTMModule(nn.Module):
         self.hidden_size = hidden_size
         self.seq_length = seq_length
 
-        self.lstm = nn.LSTM(
+        self.gru = nn.GRU(
             input_size=input_size,
             hidden_size=hidden_size,
             num_layers=num_layers,
@@ -100,10 +100,7 @@ class LSTMModule(nn.Module):
         h_0 = Variable(
             torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
         )
-        c_0 = Variable(
-            torch.zeros(self.num_layers, x.size(0), self.hidden_size).to(device)
-        )
-        ouput, (hn, cn) = self.lstm(x, (h_0, c_0))
+        ouput, (hn) = self.gru(x, (h_0))
         hn = hn.view(-1, self.hidden_size)
         out = self.relu(hn)
         out = self.fc_1(out)
@@ -121,7 +118,7 @@ hidden_size = 2
 num_layers = 1
 
 num_classes = 1
-model = LSTMModule(
+model = GRUModule(
     num_classes, input_size, hidden_size, num_layers, X_train_tensors_f.shape[1]
 ).to(device)
 
@@ -159,6 +156,6 @@ plt.axvline(x=200, c="r", linestyle="--")
 
 plt.plot(label_y, label="Actual Data")
 plt.plot(predicted, label="Predicted Data")
-plt.title("SBUX Stock Price Prediction")
+plt.title("SBUX Stock Price Prediction(Using GRU)")
 plt.legend()
 plt.show()
