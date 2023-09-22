@@ -69,7 +69,7 @@ class GRUCell(nn.Module):
             w.data.uniform_(-std, std)
 
     def forward(self, x, hidden):
-        x = x.view(-1, x.size())
+        x = x.view(-1, x.size(1))
         gate_x = self.x2h(x)
         gate_h = self.h2h(hidden)
         gate_x = gate_x.squeeze()
@@ -84,3 +84,94 @@ class GRUCell(nn.Module):
 
         hy = newgate + inputgate * (hidden - newgate)
         return hy
+
+
+# 6
+class GRUModel(nn.Module):
+    def __init__(self, input_dim, hidden_dim, layer_dim, output_dim, bias=True):
+        super().__init__()
+        self.hidden_dim = hidden_dim
+        self.layer_dim = layer_dim
+        self.gru_cell = GRUCell(input_dim, hidden_dim)
+        self.fc = nn.Linear(hidden_dim, output_dim)
+
+    def forward(self, x):
+        h0 = Variable(
+            torch.zeros(self.layer_dim, x.size(0), self.hidden_dim).to(device)
+        )
+        outs = []
+        hn = h0[0, :, :]
+        for seq in range(x.size(1)):
+            hn = self.gru_cell(x[:, seq, :], hn)
+            outs.append(hn)
+        out = outs[-1].squeeze()
+        out = self.fc(out)
+        return out
+
+
+# 7
+input_dim = 28
+hidden_dim = 128
+layer_dim = 1
+output_dim = 10
+
+model = GRUModel(input_dim, hidden_dim, layer_dim, output_dim).to(device)
+
+criterion = nn.CrossEntropyLoss()
+learning_rate = 0.1
+optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+
+
+# 8
+seq_dim = 28
+loss_list = []
+iter = 0
+for epoch in range(num_epochs):
+    for i, (images, labels) in enumerate(train_loader):
+        model.train()
+        images = Variable(images.view(-1, seq_dim, input_dim).to(device))
+        labels = Variable(labels.to(device))
+        optimizer.zero_grad()
+        outputs = model(images)
+        loss = criterion(outputs, labels).to(device)
+        loss.backward()
+        optimizer.step()
+        loss_list.append(loss.data)
+        iter += 1
+        if iter % 500 == 0:
+            model.eval()
+            correct = 0
+            total = 0
+            for images, labels in valid_loader:
+                images = Variable(images.view(-1, seq_dim, input_dim).to(device))
+                outputs = model(images)
+                _, predicted = torch.max(outputs.data, 1)
+                total += labels.size(0)
+                correct += (predicted.cpu() == labels.cpu()).sum()
+            accuracy = 100 * correct / total
+            loss_list.append(loss.data)
+            print(f"Iteration: {iter}. Loss: {loss.data}. Accuracy: {accuracy}")
+
+
+# 9
+def evaluate(model, val_iter):
+    model.eval()
+    correct = 0
+    total = 0
+    total_loss = 0
+    for images, labels in val_iter:
+        images = Variable(images.view(-1, seq_dim, input_dim).to(device))
+        outputs = model(images)
+        loss = F.cross_entropy(outputs, labels.to(device), reduction="sum")
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        total_loss += loss.item()
+        correct += (predicted.cpu() == labels.cpu()).sum()
+
+    avg_loss = total_loss / len(val_iter.dataset)
+    avg_acc = correct / total
+    return avg_loss, avg_acc
+
+
+test_loss, test_acc = evaluate(model, test_loader)
+print(f"Test Loss: {test_loss:5.2f}. Test Accuracy: {test_acc:5.2f}")
