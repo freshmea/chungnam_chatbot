@@ -135,6 +135,12 @@ loss_list = []
 iter = 0
 for epoch in range(num_epochs):
     for i, (images, labels) in enumerate(train_loader):
+        if torch.cuda.is_available():
+            images = Variable(images.view(-1, seq_dim, input_dim).cuda())
+            labels = Variable(labels.cuda())
+        else:
+            images = Variable(images.view(-1, seq_dim, input_dim))
+            labels = Variable(labels)
         imgages = images.view(-1, seq_dim, input_dim).to(device)
         labels = Variable(labels).to(device)
 
@@ -148,12 +154,17 @@ for epoch in range(num_epochs):
             correct = 0
             total = 0
             for images, labels in valid_loader:
-                images = Variable(images.view(-1, seq_dim, input_dim)).to(device)
-
+                if torch.cuda.is_available():
+                    images = Variable(images.view(-1, seq_dim, input_dim).cuda())
+                else:
+                    images = Variable(images.view(-1, seq_dim, input_dim))
                 outputs = model(images)
                 _, predicted = torch.max(outputs.data, 1)
                 total += labels.size(0)
-                correct += (predicted.cpu() == labels).sum()
+                if torch.cuda.is_available():
+                    correct += (predicted.cpu() == labels.cpu()).sum()
+                else:
+                    correct += (predicted == labels).sum()
             accuracy = 100 * correct / total
             loss_list.append(loss.data)
             print(
