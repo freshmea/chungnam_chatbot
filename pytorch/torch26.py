@@ -139,7 +139,6 @@ for epoch in range(num_epochs):
     for i, (images, labels) in enumerate(train_loader):
         images = images.view(-1, seq_dim, input_dim).to(device)
         labels = Variable(labels).to(device)
-        print(images, labels)
         optimizer.zero_grad()
         outputs = model(images)
         loss = criterion(outputs, labels)
@@ -162,3 +161,27 @@ for epoch in range(num_epochs):
                     iter, loss.data, accuracy
                 )
             )
+
+
+# 10 번 셀
+def evaluate(model, val_iter):
+    corrects, total, total_loss = 0, 0, 0
+    model.eval()
+    for image, labels in val_iter:
+        image = image.view(-1, seq_dim, input_dim).to(device)
+        labels = labels.to(device)
+
+        outputs = model(image).to(device)
+        loss = F.cross_entropy(outputs, labels, reduction="sum")
+        _, predicted = torch.max(outputs.data, 1)
+        total += labels.size(0)
+        total_loss += loss.item()
+        corrects += (predicted.cpu() == labels.cpu()).sum()
+
+    avg_loss = total_loss / len(val_iter.dataset)
+    avg_acc = corrects / total
+    return avg_loss, avg_acc
+
+
+test_loss, test_acc = evaluate(model, test_loader)
+print(f"Test Loss: {test_loss:5.2f}  | Test Accuracy: {test_acc.item():5.2f}")
