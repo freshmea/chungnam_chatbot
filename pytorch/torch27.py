@@ -138,3 +138,27 @@ for epoch in range(num_epochs):
     optimizer.step()
     if epoch % 100 == 0:
         print("Epoch: %d, Loss: %1.5f" % (epoch, loss.item()))
+
+# 10
+df_x_ss = ss.transform(data.iloc[:, :-1])
+df_y_ms = ms.transform(data.iloc[:, -1:])
+
+df_x_ss = torch.Tensor(df_x_ss)
+df_y_ms = torch.Tensor(df_y_ms)
+df_x_ss = torch.reshape(df_x_ss, (df_x_ss.shape[0], 1, df_x_ss.shape[1]))
+
+# 11
+train_predict = model(df_x_ss.to(device))
+predicted = train_predict.cpu().data.numpy()
+label_y = df_y_ms.data.numpy()
+
+predicted = ms.inverse_transform(predicted)
+label_y = ms.inverse_transform(label_y)
+plt.fiture(figsize=(10, 6))
+plt.axvline(x=200, c="r", linestyle="--")
+
+plt.plot(label_y, label="Actual Data")
+plt.plot(predicted, label="Predicted Data")
+plt.title("SBUX Stock Price Prediction")
+plt.legend()
+plt.show()
