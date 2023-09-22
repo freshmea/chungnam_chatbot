@@ -114,3 +114,50 @@ class LSTMModel(nn.Module):
         out = outs[-1].squeeze()
         out = self.fc(out)
         return out
+
+
+# 8 번 셀
+input_dim = 28
+hidden_dim = 128
+layer_dim = 1
+output_dim = 10
+
+model = LSTMModel(input_dim, hidden_dim, layer_dim, output_dim)
+if torch.cuda.is_available():
+    model.cuda()
+criterion = nn.CrossEntropyLoss()
+learning_rate = 0.1
+optimizer = torch.optim.SGD(model.parameters(), lr=learning_rate)
+
+# 9 번 셀.
+seq_dim = 28
+loss_list = []
+iter = 0
+for epoch in range(num_epochs):
+    for i, (images, labels) in enumerate(train_loader):
+        imgages = images.view(-1, seq_dim, input_dim).to(device)
+        labels = Variable(labels).to(device)
+
+        optimizer.zero_grad()
+        outputs = model(images)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+        iter += 1
+        if iter % 500 == 0:
+            correct = 0
+            total = 0
+            for images, labels in valid_loader:
+                images = Variable(images.view(-1, seq_dim, input_dim)).to(device)
+
+                outputs = model(images)
+                _, predicted = torch.max(outputs.data, 1)
+                total += labels.size(0)
+                correct += (predicted.cpu() == labels).sum()
+            accuracy = 100 * correct / total
+            loss_list.append(loss.data)
+            print(
+                "Iteration: {}. Loss: {}. Accuracy: {}".format(
+                    iter, loss.data, accuracy
+                )
+            )
