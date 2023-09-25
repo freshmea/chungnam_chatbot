@@ -80,6 +80,7 @@ class LRScheduler:
 # 6 early stopping
 class EarlyStopping:
     def __init__(self, patience=5, verbose=False, delta=0, path="data/checkpoint.pt"):
+        self.patience = patience
         self.verbose = verbose
         self.counter = 0
         self.best_score = None
@@ -242,3 +243,27 @@ for epoch in range(epoch_num):
     print(f'Val Loss: {val_epoch_loss:.4f}, Val Acc: {val_epoch_accuracy:.2f}')
     print(f'Time: {time.time()-start:.2f} sec')
     print('-'*50)
+
+#12 plotting
+print('Saving loss and accuracy plots')
+plt.figure(figsize=(10, 7))
+plt.plot(train_accuracy, color='green', label='train accuracy')
+plt.plot(val_accuracy, color='blue', label='validataion accuracy')
+plt.xlabel('Epoch')
+plt.ylabel('Accuracy')
+plt.legend()
+plt.savefig(f'plots/{acc_plot_name}.png')
+plt.show()
+
+plt.figure(figsize=(10, 7))
+plt.plot(train_loss, color='orange', label='train loss')
+plt.plot(val_loss, color='red', label='validataion loss')
+plt.xlabel('Epoch')
+plt.ylabel('Loss')
+plt.legend()
+plt.savefig(f'plots/{loss_plot_name}.png')
+plt.show()
+
+print('saving model...')
+torch.save(model.state_dict(), f'data/{model_name}.pt')
+print('training complete')
