@@ -1,2 +1,3 @@
 model.pt
 pytorch/.data/
+pytorch/data/archive/
