@@ -90,3 +90,27 @@ print(stemmer.stem('obsesse'), stemmer.stem('obsessed'))
 print(stemmer.stem('standardizes'), stemmer.stem('standardization'))
 print(stemmer.stem('national'), stemmer.stem('nation'))
 
+# 11 wordnet
+import nltk
+nltk.download('wordnet')
+
+from nltk.stem import WordNetLemmatizer
+lemma = WordNetLemmatizer()
+print(stemmer.stem('obsesse'), stemmer.stem('obsessed'))
+print(lemma.lemmatize('obsesse'), lemma.lemmatize('obsessed'))
+print(stemmer.stem('standardizes'), stemmer.stem('standardization'))
+print(lemma.lemmatize('standardizes'), lemma.lemmatize('standardization'))
+print(stemmer.stem('national'), stemmer.stem('nation'))
+print(lemma.lemmatize('national'), lemma.lemmatize('nation'))
+print(stemmer.stem('saying'), stemmer.stem('said'))
+print(lemma.lemmatize('saying'), lemma.lemmatize('said'))
+print(stemmer.stem('university'), stemmer.stem('universe'))
+print(lemma.lemmatize('university'), lemma.lemmatize('universe'))
+
+print(lemma.lemmatize('obsesse', 'v'), lemma.lemmatize('obsessed', 'a'))
+print(lemma.lemmatize('standardizes', 'v'), lemma.lemmatize('standardization', 'n'))
+print(lemma.lemmatize('national', 'a'), lemma.lemmatize('nation', 'n'))
+print(lemma.lemmatize('saying', 'r'), lemma.lemmatize('said'), 'v')
+print(lemma.lemmatize('university', 'r'), lemma.lemmatize('universe', 'n'))
+
+
