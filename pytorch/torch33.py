@@ -35,3 +35,26 @@ f = open('data/ratings_train.txt', 'r', encoding='utf-8')
 rdr = csv.reader(f, delimiter='\t')
 rdw = list(rdr)
 f.close()
+
+# 5
+twitter = Okt()
+
+result = []
+for line in rdw:
+    malist = twitter.pos(line[1], norm=True, stem=True)
+    r = []
+    for word in malist:
+        if not word[1] in ['Josa', 'Eomi', 'Punctuation']:
+            r.append(word[0])
+    rl = (" ".join(r)).strip()
+    result.append(rl)
+    print(rl)
+
+# 6
+with open("NaverMovie.nlp", 'w', encoding='utf-8') as fp:
+    fp.write("\n".join(result))
+    
+# 7
+mData = word2vec.LineSentence("NaverMovie.nlp")
+mModel = word2vec.Word2Vec(mData, vector_size=200, window=10, hs=1, min_count=2, sg=1)
+mModel.save("NaverMovie.model")
