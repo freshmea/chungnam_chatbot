@@ -58,3 +58,35 @@ with open("NaverMovie.nlp", 'w', encoding='utf-8') as fp:
 mData = word2vec.LineSentence("NaverMovie.nlp")
 mModel = word2vec.Word2Vec(mData, vector_size=200, window=10, hs=1, min_count=2, sg=1)
 mModel.save("NaverMovie.model")
+
+
+# 8 
+import nltk
+from nltk.corpus import stopwords
+nltk.download('stopwords')
+nltk.download('punkt')
+from nltk.tokenize import word_tokenize
+
+sample_text = "One of first things I noticed about the book was the unusual way author chose to narrate story. Instead of telling it from perspective of one or two characters, author chose to tell it from perspective of an entire town."
+text_tokens = word_tokenize(sample_text)
+
+tokens_without_sw = [word for word in text_tokens if not word in stopwords.words('english')]
+print(f'불용어 제거 미적용: {text_tokens}', '\n')
+print(f'불용어 제거 적용: {tokens_without_sw}')
+
+# 9
+from nltk.stem import PorterStemmer
+stemmer = PorterStemmer()
+
+print(stemmer.stem('obsesse'), stemmer.stem('obsessed'))
+print(stemmer.stem('standardizes'), stemmer.stem('standardization'))
+print(stemmer.stem('national'), stemmer.stem('nation'))
+
+# 10 lancaster
+from nltk.stem import LancasterStemmer
+stemmer = LancasterStemmer()
+
+print(stemmer.stem('obsesse'), stemmer.stem('obsessed'))
+print(stemmer.stem('standardizes'), stemmer.stem('standardization'))
+print(stemmer.stem('national'), stemmer.stem('nation'))
+
