@@ -105,3 +105,21 @@ class EarlyStopping():
             print(f'--> {val_loss:.6f}).  Saving model ...')
             torch.save(model.state_dict(), self.path)
             self.val_loss_min = val_loss
+
+
+# 7 parser
+parser = argparse.ArgumentParser()
+parser.add_argument('--lr-scheduler', dest='lr_scheduler', action='store_true', default=False)
+parser.add_argument('--early-stopping', dest='early_stopping', action='store_true', default=False)
+# args = vars(parser.parse_args())
+
+
+# 8 
+print(f'Computation device: {device}\n')
+model = models.resnet50(pretrained=True).to(device)
+total_params = sum(p.numel() for p in model.parameters())
+print(f"{total_params:,} total parameters")
+total_trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+print(f"{total_trainable_params:,} training parameters\n")
+
+
