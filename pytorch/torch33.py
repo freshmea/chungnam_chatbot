@@ -26,3 +26,12 @@ sentence = "it's nothing that you don't already know the answer to most people a
 words = WordPunctTokenizer().tokenize(sentence)
 words
 
+# 4
+import csv
+from konlpy.tag import Okt
+from gensim.models import word2vec
+
+f = open('data/ratings_train.txt', 'r', encoding='utf-8')
+rdr = csv.reader(f, delimiter='\t')
+rdw = list(rdr)
+f.close()
