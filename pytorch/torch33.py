@@ -13,3 +13,16 @@ Sept. 25, 2023, 1:09 a.m. ET
 '''
 tokenized_sentences = sent_tokenize(text_sample)
 print(tokenized_sentences)
+
+# 2
+from nltk import word_tokenize
+sentence = "The faster Harry got to the store, the faster Harry, the faster, would get home."
+words = word_tokenize(sentence)
+words
+
+# 3 
+from nltk.tokenize import WordPunctTokenizer
+sentence = "it's nothing that you don't already know the answer to most people aren't aware of how their inner world works."
+words = WordPunctTokenizer().tokenize(sentence)
+words
+
