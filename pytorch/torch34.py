@@ -1,4 +1,4 @@
-# 1 
+# 1
 import pandas as pd
 import torch
 import torch.nn as nn
@@ -7,11 +7,11 @@ from torch.utils.data import Dataset, DataLoader
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MinMaxScaler, StandardScaler
 
-device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 print(device)
 
 # 2
-df = pd.read_csv('data/diabetes.csv')
+df = pd.read_csv("data/diabetes.csv")
 print(df.head())
 X = df[df.columns[:-1]]
 y = df[df.columns[-1]]
@@ -30,7 +30,7 @@ y_train = ss.fit_transform(y_train.reshape(-1, 1))
 y_test = ss.fit_transform(y_test.reshape(-1, 1))
 
 
-# 4 
+# 4
 class CustomDataset(Dataset):
     def __init__(self, X, y):
         self.X = X
@@ -51,6 +51,7 @@ test_data = CustomDataset(torch.FloatTensor(X_test), torch.FloatTensor(y_test))
 train_loader = DataLoader(train_data, batch_size=64, shuffle=True)
 test_loader = DataLoader(test_data, batch_size=64, shuffle=False)
 
+
 # 6
 class BinaryClassification(nn.Module):
     def __init__(self):
@@ -62,7 +63,7 @@ class BinaryClassification(nn.Module):
         self.dropout = nn.Dropout(p=0.1)
         self.batchnorm1 = nn.BatchNorm1d(64)
         self.batchnorm2 = nn.BatchNorm1d(64)
-    
+
     def forward(self, input):
         x = self.relu(self.layer_1(input))
         x = self.batchnorm1(x)
@@ -70,4 +71,4 @@ class BinaryClassification(nn.Module):
         x = self.batchnorm2(x)
         x = self.dropout(x)
         x = self.out_layer(x)
-        return x 
+        return x
