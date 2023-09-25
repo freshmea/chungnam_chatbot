@@ -39,4 +39,16 @@ val_dataset = datasets.ImageFolder(root="/data/archive/val", transform=val_trans
 train_dataloder = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4)
 val_dataset = DataLoader(val_dataset, batch_size=32, shuffle=False, num_workers=4)
 
+
 # 4
+def resnet50(pretrained=True, requires_grad=False):
+    model = models.resnet50(progress=True, pretrained=pretrained)
+    if not requires_grad:
+        for param in model.parameters():
+            param.requires_grad = False
+    elif requires_grad:
+        for param in model.parameters():
+            param.requires_grad = True
+    model.fc = nn.Linear(2048, 2)
+    return model
+

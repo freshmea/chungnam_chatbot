@@ -1,3 +1,4 @@
 model.pt
 pytorch/.data/
 pytorch/data/archive/
+pytorch/data/archive.zip
