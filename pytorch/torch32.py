@@ -36,7 +36,7 @@ print(df)
 df1 = df.dropna()
 print(df1)
 
-# 9 
+# 9
 df2 = df.fillna()
 print(df2)
 

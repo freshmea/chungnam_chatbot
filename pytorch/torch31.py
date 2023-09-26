@@ -38,9 +38,7 @@ val_transform = transforms.Compose(
 train_dataset = datasets.ImageFolder(
     root="data/archive/train", transform=train_transform
 )
-val_dataset = datasets.ImageFolder(
-    root="data/archive/test", transform=val_transform
-)
+val_dataset = datasets.ImageFolder(root="data/archive/test", transform=val_transform)
 train_dataloder = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=4)
 val_dataloder = DataLoader(val_dataset, batch_size=32, shuffle=False, num_workers=4)
 
@@ -76,6 +74,7 @@ class LRScheduler:
 
     def __call__(self, val_loss):
         self.lr_scheduler.step(val_loss)
+
 
 # 6 early stopping
 class EarlyStopping:
@@ -137,27 +136,25 @@ epoch_num = 10
 optimizer = optim.Adam(model.parameters(), lr=lr)
 criterion = nn.CrossEntropyLoss()
 
-loss_plot_name = 'loss'
-acc_plot_name = 'accuracy'
-model_name = 'resnet50'
+loss_plot_name = "loss"
+acc_plot_name = "accuracy"
+model_name = "resnet50"
 
 
 lr_scheduler_bool = False
 early_stopping_bool = False
 if lr_scheduler_bool:
-    print('info: init lr scheduler')
+    print("info: init lr scheduler")
     lr_scheduler = LRScheduler(optimizer)
-    loss_plot_name = 'loss_lr_scheduler'
-    acc_plot_name = 'accuracy_lr_scheduler'
-    model_name = 'resnet50_lr_scheduler'
+    loss_plot_name = "loss_lr_scheduler"
+    acc_plot_name = "accuracy_lr_scheduler"
+    model_name = "resnet50_lr_scheduler"
 if early_stopping_bool:
-    print('info: init early stopping')
+    print("info: init early stopping")
     early_stopping = EarlyStopping()
-    loss_plot_name = 'loss_early_stopping'
-    acc_plot_name = 'accuracy_early_stopping'
-    model_name = 'resnet50_early_stopping'
-
-
+    loss_plot_name = "loss_early_stopping"
+    acc_plot_name = "accuracy_early_stopping"
+    model_name = "resnet50_early_stopping"
 
 
 # 9 training
@@ -167,7 +164,10 @@ def training(model, train_dataloader, train_dataset, optimizer, criterion):
     train_running_correct = 0
     counter = 0
     total = 0
-    prog_bar = tqdm_notebook(enumerate(train_dataloader), total=int(len(train_dataset)/train_dataloader.batch_size))
+    prog_bar = tqdm_notebook(
+        enumerate(train_dataloader),
+        total=int(len(train_dataset) / train_dataloader.batch_size),
+    )
 
     for i, data in prog_bar:
         counter += 1
@@ -187,16 +187,18 @@ def training(model, train_dataloader, train_dataset, optimizer, criterion):
     return train_loss, train_accuracy
 
 
-
 # 10 validate
 def validate(model, test_dataloader, val_dataset, criterion):
-    print('VALIDATION')
+    print("VALIDATION")
     model.eval()
     val_running_loss = 0.0
     val_running_correct = 0
     counter = 0
     total = 0
-    prog_bar = tqdm_notebook(enumerate(test_dataloader), total=int(len(val_dataset)/test_dataloader.batch_size))
+    prog_bar = tqdm_notebook(
+        enumerate(test_dataloader),
+        total=int(len(val_dataset) / test_dataloader.batch_size),
+    )
 
     with torch.no_grad():
         for i, data in prog_bar:
@@ -224,9 +226,11 @@ start = time.time()
 for epoch in range(epoch_num):
     print(f"Epoch {epoch+1} of {epoch_num}")
     train_epoch_loss, train_epoch_accuracy = training(
-        model, train_dataloder, train_dataset, optimizer, criterion)
+        model, train_dataloder, train_dataset, optimizer, criterion
+    )
     val_epoch_loss, val_epoch_accuracy = validate(
-        model, val_dataloder, val_dataset, criterion)
+        model, val_dataloder, val_dataset, criterion
+    )
     train_loss.append(train_epoch_loss)
     train_accuracy.append(train_epoch_accuracy)
     val_loss.append(val_epoch_loss)
@@ -240,30 +244,30 @@ for epoch in range(epoch_num):
             break
 
     print(f"Train Loss: {train_epoch_loss:.4f}, Train Acc: {train_epoch_accuracy:.2f}")
-    print(f'Val Loss: {val_epoch_loss:.4f}, Val Acc: {val_epoch_accuracy:.2f}')
-    print(f'Time: {time.time()-start:.2f} sec')
-    print('-'*50)
+    print(f"Val Loss: {val_epoch_loss:.4f}, Val Acc: {val_epoch_accuracy:.2f}")
+    print(f"Time: {time.time()-start:.2f} sec")
+    print("-" * 50)
 
-#12 plotting
-print('Saving loss and accuracy plots')
+# 12 plotting
+print("Saving loss and accuracy plots")
 plt.figure(figsize=(10, 7))
-plt.plot(train_accuracy, color='green', label='train accuracy')
-plt.plot(val_accuracy, color='blue', label='validataion accuracy')
-plt.xlabel('Epoch')
-plt.ylabel('Accuracy')
+plt.plot(train_accuracy, color="green", label="train accuracy")
+plt.plot(val_accuracy, color="blue", label="validataion accuracy")
+plt.xlabel("Epoch")
+plt.ylabel("Accuracy")
 plt.legend()
-plt.savefig(f'plots/{acc_plot_name}.png')
+plt.savefig(f"plots/{acc_plot_name}.png")
 plt.show()
 
 plt.figure(figsize=(10, 7))
-plt.plot(train_loss, color='orange', label='train loss')
-plt.plot(val_loss, color='red', label='validataion loss')
-plt.xlabel('Epoch')
-plt.ylabel('Loss')
+plt.plot(train_loss, color="orange", label="train loss")
+plt.plot(val_loss, color="red", label="validataion loss")
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
 plt.legend()
-plt.savefig(f'plots/{loss_plot_name}.png')
+plt.savefig(f"plots/{loss_plot_name}.png")
 plt.show()
 
-print('saving model...')
-torch.save(model.state_dict(), f'data/{model_name}.pt')
-print('training complete')
+print("saving model...")
+torch.save(model.state_dict(), f"data/{model_name}.pt")
+print("training complete")
