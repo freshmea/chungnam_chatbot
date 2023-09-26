@@ -259,7 +259,8 @@ hidden_size = 512
 num_layers = 1
 num_iteration = 75000
 
-encoder = Encoder(input_size, hidden_size, num_layers).to(device)
+# encoder = Encoder(input_size, hidden_size, num_layers).to(device)
+encoder = Encoder(input_size, hidden_size, embed_size, num_layers).to(device)
 decoder = Decoder(output_size, hidden_size, embed_size, num_layers).to(device)
 model = Seq2Seq(encoder, decoder, device).to(device)
 
