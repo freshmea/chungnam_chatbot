@@ -79,3 +79,30 @@ print(model1.wv.similarity("peter", "hook"))
 # 8
 model2 = gensim.models.Word2Vec(data, min_count=1, vector_size=100, window=5, sg=1)
 print(model2.wv.similarity("peter", "wendy"))
+
+# 9
+from gensim.test.utils import common_texts
+from gensim.models import FastText
+
+model = FastText("data/peter.txt", size=4, window=3, min_count=1, epochs=10)
+
+sim_score = model.wv.similarity("peter", "rabbit")
+print(sim_score)
+
+sim_score = model.wv.similarity("peter", "hook")
+print(sim_score)
+
+# 10
+from __future__ import print_function
+from gensim.models import KeyedVectors
+
+model_kr = KeyedVectors.load_word2vec_format("data/wiki.ko.vec")
+
+# 11
+find_similar_to = "노력"
+
+for smilar_word in model_kr.similar_by_word(find_similar_to):
+    print("Word : ", smilar_word[0], "\nSimilarity : ", smilar_word[1])
+
+similarities = model_kr.most_similar(positive=["동물", "육식동물"], negative=["사람"])
+print(similarities)

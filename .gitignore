@@ -3,3 +3,5 @@ pytorch/.data/
 pytorch/data/archive/
 pytorch/data/archive.zip
 AI/
+pytorch\data2\glove.6B.100d.txt
+pytorch\data2\glove.6B.100d.vector.txt
