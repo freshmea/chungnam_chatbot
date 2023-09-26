@@ -1,4 +1,3 @@
-# 1
 from __future__ import unicode_literals, print_function, division
 import torch
 import torch.nn as nn
@@ -8,12 +7,12 @@ import torch.nn.functional as F
 import numpy as np
 import pandas as pd
 
-import os, re, random
+import os
+import re
+import random
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-
-# 2
 SOS_token = 0
 EOS_token = 1
 MAX_LENGTH = 20
@@ -40,10 +39,9 @@ class Lang:
             self.word2count[word] += 1
 
 
-# 3
 def normalizeString(df, lang):
     sentence = df[lang].str.lower()
-    sentence = sentence.str.replace("[^A-Za-z\s]+", " ")
+    sentence = sentence.str.replace("[^A-Za-z\s]+", "")
     sentence = sentence.str.normalize("NFD")
     sentence = sentence.str.encode("ascii", errors="ignore").str.decode("utf-8")
     return sentence
@@ -61,7 +59,7 @@ def read_file(loc, lang1, lang2):
 
 
 def process_data(lang1, lang2):
-    df = read_file("data/%s-%s.txt" % (lang1, lang2), lang1, lang2)
+    df = read_file("../chap10/data/%s-%s.txt" % (lang1, lang2), lang1, lang2)
     sentence1, sentence2 = read_sentence(df, lang1, lang2)
 
     input_lang = Lang()
@@ -76,10 +74,10 @@ def process_data(lang1, lang2):
             input_lang.addSentence(sentence1[i])
             output_lang.addSentence(sentence2[i])
             pairs.append(full)
+
     return input_lang, output_lang, pairs
 
 
-# 4
 def indexesFromSentence(lang, sentence):
     return [lang.word2index[word] for word in sentence.split(" ")]
 
@@ -96,10 +94,9 @@ def tensorFromPair(input_lang, output_lang, pair):
     return (input_tensor, output_tensor)
 
 
-# 5 encoder
 class Encoder(nn.Module):
     def __init__(self, input_dim, hidden_dim, embbed_dim, num_layers):
-        super().__init__()
+        super(Encoder, self).__init__()
         self.input_dim = input_dim
         self.embbed_dim = embbed_dim
         self.hidden_dim = hidden_dim
@@ -113,13 +110,13 @@ class Encoder(nn.Module):
         return outputs, hidden
 
 
-# 6 decoder
 class Decoder(nn.Module):
     def __init__(self, output_dim, hidden_dim, embbed_dim, num_layers):
-        super().__init__()
-        self.output_dim = output_dim
-        self.hidden_dim = hidden_dim
+        super(Decoder, self).__init__()
+
         self.embbed_dim = embbed_dim
+        self.hidden_dim = hidden_dim
+        self.output_dim = output_dim
         self.num_layers = num_layers
 
         self.embedding = nn.Embedding(output_dim, self.embbed_dim)
@@ -135,10 +132,10 @@ class Decoder(nn.Module):
         return prediction, hidden
 
 
-# 7 seq2seq
 class Seq2Seq(nn.Module):
     def __init__(self, encoder, decoder, device, MAX_LENGTH=MAX_LENGTH):
         super().__init__()
+
         self.encoder = encoder
         self.decoder = decoder
         self.device = device
@@ -152,6 +149,7 @@ class Seq2Seq(nn.Module):
 
         for i in range(input_length):
             encoder_output, encoder_hidden = self.encoder(input_lang[i])
+
         decoder_hidden = encoder_hidden.to(device)
         decoder_input = torch.tensor([SOS_token], device=device)
 
@@ -166,11 +164,10 @@ class Seq2Seq(nn.Module):
         return outputs
 
 
-# 8 model, loss
 teacher_forcing_ratio = 0.5
 
 
-def makeModel(model, input_tensor, target_tensor, model_optimizer, criterion):
+def Model(model, input_tensor, target_tensor, model_optimizer, criterion):
     model_optimizer.zero_grad()
     input_length = input_tensor.size(0)
     loss = 0
@@ -180,13 +177,13 @@ def makeModel(model, input_tensor, target_tensor, model_optimizer, criterion):
 
     for ot in range(num_iter):
         loss += criterion(output[ot], target_tensor[ot])
+
     loss.backward()
     model_optimizer.step()
     epoch_loss = loss.item() / num_iter
     return epoch_loss
 
 
-# 9 train
 def trainModel(model, input_lang, output_lang, pairs, num_iteration=20000):
     model.train()
     optimizer = optim.SGD(model.parameters(), lr=0.01)
@@ -194,7 +191,7 @@ def trainModel(model, input_lang, output_lang, pairs, num_iteration=20000):
     total_loss_iterations = 0
 
     training_pairs = [
-        tensorFromPair(input_lang, output_lang, random.choice(pairs))
+        tensorsFromPair(input_lang, output_lang, random.choice(pairs))
         for i in range(num_iteration)
     ]
 
@@ -202,19 +199,18 @@ def trainModel(model, input_lang, output_lang, pairs, num_iteration=20000):
         training_pair = training_pairs[iter - 1]
         input_tensor = training_pair[0]
         target_tensor = training_pair[1]
-        loss = makeModel(model, input_tensor, target_tensor, optimizer, criterion)
+        loss = Model(model, input_tensor, target_tensor, optimizer, criterion)
         total_loss_iterations += loss
 
         if iter % 5000 == 0:
             average_loss = total_loss_iterations / 5000
             total_loss_iterations = 0
-            print("loss: %.4f" % (average_loss))
+            print("%d %.4f" % (iter, average_loss))
 
-    torch.save(model.state_dict(), "data/mytraining.pt")
+    torch.save(model.state_dict(), "../chap10/data/mytraining.pt")
     return model
 
 
-# 10 evaluate
 def evaluate(model, input_lang, output_lang, sentences, max_length=MAX_LENGTH):
     with torch.no_grad():
         input_tensor = tensorFromSentence(input_lang, sentences[0])
@@ -224,6 +220,7 @@ def evaluate(model, input_lang, output_lang, sentences, max_length=MAX_LENGTH):
 
         for ot in range(output.size(0)):
             topv, topi = output[ot].topk(1)
+
             if topi[0].item() == EOS_token:
                 decoded_words.append("<EOS>")
                 break
@@ -235,32 +232,32 @@ def evaluate(model, input_lang, output_lang, sentences, max_length=MAX_LENGTH):
 def evaluateRandomly(model, input_lang, output_lang, pairs, n=10):
     for i in range(n):
         pair = random.choice(pairs)
-        print("input", pair[0])
-        print("output", pair[1])
+        print("input {}".format(pair[0]))
+        print("output {}".format(pair[1]))
         output_words = evaluate(model, input_lang, output_lang, pair)
         output_sentence = " ".join(output_words)
-        print("predicted : ", output_sentence)
+        print("predicted {}".format(output_sentence))
 
 
-# 11 main
 lang1 = "eng"
 lang2 = "fra"
 input_lang, output_lang, pairs = process_data(lang1, lang2)
 
 randomize = random.choice(pairs)
-print("randomize sentence", randomize)
+print("random sentence {}".format(randomize))
 
 input_size = input_lang.n_words
 output_size = output_lang.n_words
-print("input size", input_size, "output size", output_size)
+print("Input : {} Output : {}".format(input_size, output_size))
 
 embed_size = 256
 hidden_size = 512
 num_layers = 1
 num_iteration = 75000
 
-encoder = Encoder(input_size, hidden_size, num_layers).to(device)
-decoder = Decoder(output_size, hidden_size, embed_size, num_layers).to(device)
+encoder = Encoder(input_size, hidden_size, embed_size, num_layers)
+decoder = Decoder(output_size, hidden_size, embed_size, num_layers)
+
 model = Seq2Seq(encoder, decoder, device).to(device)
 
 print(encoder)
