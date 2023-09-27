@@ -96,3 +96,91 @@ def load_metrics(load_path):
         state_dict["valid_loss_list"],
         state_dict["global_steps_list"],
     )
+
+
+# 8 model training function
+def train(
+    model,
+    optimizer,
+    criterion=nn.BCELoss(),
+    num_epoch=5,
+    eval_every=len(train_loader) // 2,
+    best_valid_loss=float("Inf"),
+):
+    total_correct = 0.0
+    total_len = 0.0
+    running_loss = 0.0
+    valid_running_loss = 0.0
+    global_step = 0
+    train_loss_list = []
+    valid_loss_list = []
+    global_steps_list = []
+
+    model.train()
+    for epoch in range(num_epoch):
+        for text, label in train_loader:
+            optimizer.zero_grad()
+            encode_list = [tokenizer.encode(t, add_special_tokens=True) for t in text]
+            padded_list = [e + [0] * (512 - len(e)) for e in encode_list]
+            sample = torch.tensor(padded_list)
+            sample, label = sample.to(device), label.to(device)
+            labels = torch.tensor(label)
+            outputs = model(sample, labels=labels)
+            loss, logits = outputs
+
+            # loss function
+            pred = torch.argmax(F.softmax(logits), dim=1)
+            correct = pred.eq(labels)
+            total_correct += correct.sum().item()
+            total_len += len(labels)
+            running_loss = loss.item()
+
+            loss.backward()
+            optimizer.step()
+            global_step += 1
+
+            if global_step % eval_every == 0:
+                model.eval()
+                with torch.no_grad():
+                    for text, label in valid_loader:
+                        encode_list = [
+                            tokenizer.encode(t, add_special_tokens=True) for t in text
+                        ]
+                        padded_list = [e + [0] * (512 - len(e)) for e in encode_list]
+                        sample = torch.tensor(padded_list)
+                        sample, label = sample.to(device), label.to(device)
+                        labels = torch.tensor(label)
+                        outputs = model(sample, labels=labels)
+                        loss, logits = outputs
+                        valid_running_loss += loss.item()
+
+                average_train_loss = running_loss / eval_every
+                average_valid_loss = valid_running_loss / len(valid_loader)
+                train_loss_list.append(average_train_loss)
+                valid_loss_list.append(average_valid_loss)
+                global_steps_list.append(global_step)
+
+                running_loss = 0.0
+                valid_running_loss = 0.0
+                model.train()
+
+                print(
+                    f"Epoch [{epoch+1}/{num_epoch}], Step [{global_step}/{num_epoch*len(train_loader)}], Train Loss: {average_train_loss:.4f}, Valid Loss: {average_valid_loss:.4f}"
+                )
+
+                if best_valid_loss > average_valid_loss:
+                    best_valid_loss = average_valid_loss
+                    save_checkpoint("data/model.pt", model, best_valid_loss)
+                    save_metrics(
+                        "data/metrics.pt",
+                        train_loss_list,
+                        valid_loss_list,
+                        global_steps_list,
+                    )
+    save_metrics("data/metrics.pt", train_loss_list, valid_loss_list, global_steps_list)
+    print("훈련 종료")
+
+
+# 9 train model
+optimizer = optim.Adam(model.parameters(), lr=2e-5)
+train(model=model, optimizer=optimizer)
