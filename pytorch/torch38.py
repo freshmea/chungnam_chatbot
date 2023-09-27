@@ -12,7 +12,6 @@ import os, re, random, time
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-
 # 2
 SOS_token = 0
 EOS_token = 1
@@ -113,26 +112,41 @@ class Encoder(nn.Module):
         return outputs, hidden
 
 
-# 6 decoder
-class Decoder(nn.Module):
-    def __init__(self, output_dim, hidden_dim, embbed_dim, num_layers):
+# 12 attension
+class AttnDecoderRNN(nn.Module):
+    def __init__(self, hidden_size, output_size, dropout_p=0.5, max_length=MAX_LENGTH):
         super().__init__()
-        self.output_dim = output_dim
-        self.hidden_dim = hidden_dim
-        self.embbed_dim = embbed_dim
-        self.num_layers = num_layers
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+        self.dropout_p = dropout_p
+        self.max_length = max_length
 
-        self.embedding = nn.Embedding(output_dim, self.embbed_dim)
-        self.gru = nn.GRU(self.embbed_dim, self.hidden_dim, num_layers=self.num_layers)
-        self.out = nn.Linear(self.hidden_dim, output_dim)
-        self.softmax = nn.LogSoftmax(dim=1)
+        self.embedding = nn.Embedding(self.output_size, self.hidden_size)
+        self.attn = nn.Linear(self.hidden_size * 2, self.max_length)
+        self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size)
+        self.dropout = nn.Dropout(self.dropout_p)
+        self.gru = nn.GRU(self.hidden_size, self.hidden_size)
+        self.out = nn.Linear(self.hidden_size, self.output_size)
 
-    def forward(self, input, hidden):
-        input = input.view(1, -1)
-        embedded = F.relu(self.embedding(input))
-        output, hidden = self.gru(embedded, hidden)
-        prediction = self.softmax(self.out(output[0]))
-        return prediction, hidden
+    def forward(self, input, hidden, encoder_outputs):
+        embedded = self.embedding(input).view(1, 1, -1)
+        embedded = self.dropout(embedded)
+
+        attn_weights = F.softmax(
+            self.attn(torch.cat((embedded[0], hidden[0]), 1)), dim=1
+        )
+        attn_applied = torch.bmm(
+            attn_weights.unsqueeze(0), encoder_outputs.unsqueeze(0)
+        )
+
+        output = torch.cat((embedded[0], attn_applied[0]), 1)
+        output = self.attn_combine(output).unsqueeze(0)
+
+        output = F.relu(output)
+        output, hidden = self.gru(output, hidden)
+
+        output = F.log_softmax(self.out(output[0]), dim=1)
+        return output, hidden, attn_weights
 
 
 # 7 seq2seq
@@ -186,135 +200,7 @@ def makeModel(model, input_tensor, target_tensor, model_optimizer, criterion):
     return epoch_loss
 
 
-# 9 train
-def trainModel(model, input_lang, output_lang, pairs, num_iteration=20000):
-    model.train()
-    optimizer = optim.SGD(model.parameters(), lr=0.01)
-    criterion = nn.NLLLoss()
-    total_loss_iterations = 0
-
-    training_pairs = [
-        tensorFromPair(input_lang, output_lang, random.choice(pairs))
-        for i in range(num_iteration)
-    ]
-
-    for iter in range(1, num_iteration + 1):
-        training_pair = training_pairs[iter - 1]
-        input_tensor = training_pair[0]
-        target_tensor = training_pair[1]
-        loss = makeModel(model, input_tensor, target_tensor, optimizer, criterion)
-        total_loss_iterations += loss
-
-        if iter % 5000 == 0:
-            average_loss = total_loss_iterations / 5000
-            total_loss_iterations = 0
-            print(f"iter: {iter} loss: {average_loss:.4f}")
-
-    torch.save(model.state_dict(), "data/mytraining.pt")
-    return model
-
-
-# 10 evaluate
-def evaluate(model, input_lang, output_lang, sentences, max_length=MAX_LENGTH):
-    with torch.no_grad():
-        input_tensor = tensorFromSentence(input_lang, sentences[0])
-        output_tensor = tensorFromSentence(output_lang, sentences[1])
-        decoded_words = []
-        output = model(input_tensor, output_tensor)
-
-        for ot in range(output.size(0)):
-            topv, topi = output[ot].topk(1)
-            if topi[0].item() == EOS_token:
-                decoded_words.append("<EOS>")
-                break
-            else:
-                decoded_words.append(output_lang.index2word[topi[0].item()])
-    return decoded_words
-
-
-def evaluateRandomly(model, input_lang, output_lang, pairs, n=10):
-    for i in range(n):
-        pair = random.choice(pairs)
-        print("input", pair[0])
-        print("output", pair[1])
-        output_words = evaluate(model, input_lang, output_lang, pair)
-        output_sentence = " ".join(output_words)
-        print("predicted : ", output_sentence)
-
-
-# 11 main
-lang1 = "eng"
-lang2 = "fra"
-input_lang, output_lang, pairs = process_data(lang1, lang2)
-
-randomize = random.choice(pairs)
-print("randomize sentence", randomize)
-
-input_size = input_lang.n_words
-output_size = output_lang.n_words
-print("input size", input_size, "output size", output_size)
-
-embed_size = 256
-hidden_size = 512
-num_layers = 1
-num_iteration = 75000
-
-encoder = Encoder(input_size, hidden_size, embed_size, num_layers).to(device)
-decoder = Decoder(output_size, hidden_size, embed_size, num_layers).to(device)
-model = Seq2Seq(encoder, decoder, device).to(device)
-
-print(encoder)
-print(decoder)
-
-model = trainModel(model, input_lang, output_lang, pairs, num_iteration)
-
-
-# 12 attension
-class AttnDecoderRNN(nn.Module):
-    def __init__(self, hidden_size, output_size, dropout_p=0.5, max_length=MAX_LENGTH):
-        super().__init__()
-        self.hidden_size = hidden_size
-        self.output_size = output_size
-        self.dropout_p = dropout_p
-        self.max_length = max_length
-
-        self.embedding = nn.Embedding(self.output_size, self.hidden_size)
-        self.attn = nn.Linear(self.hidden_size * 2, self.max_length)
-        self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size)
-        self.dropout = nn.Dropout(self.dropout_p)
-        self.gru = nn.GRU(self.hidden_size, self.hidden_size)
-        self.out = nn.Linear(self.hidden_size, self.output_size)
-
-    def forward(self, input, hidden, encoder_outputs):
-        embedded = self.embedding(input).view(1, 1, -1)
-        embedded = self.dropout(embedded)
-
-        attn_weights = F.softmax(
-            self.attn(torch.cat((embedded[0], hidden[0]), 1)), dim=1
-        )
-        attn_applied = torch.bmm(
-            attn_weights.unsqueeze(0), encoder_outputs.unsqueeze(0)
-        )
-
-        output = torch.cat((embedded[0], attn_applied[0]), 1)
-        output = self.attn_combine(output).unsqueeze(0)
-
-        output = F.relu(output)
-        output, hidden = self.gru(output, hidden)
-
-        output = F.log_softmax(self.out(output[0]), dim=1)
-        return output, hidden, attn_weights
-
-
 # 13 train
-import time
-
-lang1 = "eng"
-lang2 = "fra"
-input_lang, output_lang, pairs = process_data(lang1, lang2)
-
-randomize = random.choice(pairs)
-print("randomize sentence", randomize)
 
 
 def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lr=0.01):
@@ -347,7 +233,43 @@ def trainIters(encoder, decoder, n_iters, print_every=1000, plot_every=100, lr=0
             print(f"Iter: {iter}, Loss avg: {print_loss_avg}")
 
 
+# 10 evaluate
+def evaluate(model, input_lang, output_lang, sentences, max_length=MAX_LENGTH):
+    with torch.no_grad():
+        input_tensor = tensorFromSentence(input_lang, sentences[0])
+        output_tensor = tensorFromSentence(output_lang, sentences[1])
+        decoded_words = []
+        output = model(input_tensor, output_tensor)
+
+        for ot in range(output.size(0)):
+            topv, topi = output[ot].topk(1)
+            if topi[0].item() == EOS_token:
+                decoded_words.append("<EOS>")
+                break
+            else:
+                decoded_words.append(output_lang.index2word[topi[0].item()])
+    return decoded_words
+
+
+def evaluateRandomly(model, input_lang, output_lang, pairs, n=10):
+    for i in range(n):
+        pair = random.choice(pairs)
+        print("input", pair[0])
+        print("output", pair[1])
+        output_words = evaluate(model, input_lang, output_lang, pair)
+        output_sentence = " ".join(output_words)
+        print("predicted : ", output_sentence)
+
+
 # 14
+lang1 = "eng"
+lang2 = "fra"
+input_lang, output_lang, pairs = process_data(lang1, lang2)
+
+randomize = random.choice(pairs)
+print("randomize sentence", randomize)
+
+
 embed_size = 256
 hidden_size = 512
 num_layers = 1
@@ -356,6 +278,7 @@ output_size = output_lang.n_words
 
 encoder1 = Encoder(input_size, hidden_size, embed_size, num_layers).to(device)
 attn_decoder1 = AttnDecoderRNN(hidden_size, output_size, dropout_p=0.1).to(device)
+model = Seq2Seq(encoder1, attn_decoder1, device).to(device)
 
 print(encoder1)
 print(attn_decoder1)
