@@ -113,30 +113,27 @@ class Encoder(nn.Module):
 
 
 # 12 attension
-from torch.autograd import Variable
-
-
 class AttnDecoderRNN(nn.Module):
-    def __init__(self, hidden_dim, output_dim, dropout_p=0.5, max_length=MAX_LENGTH):
+    def __init__(self, hidden_size, output_size, dropout_p=0.1, max_length=MAX_LENGTH):
         super().__init__()
-        self.hidden_dim = hidden_dim
-        self.output_dim = output_dim
+        self.hidden_size = hidden_size
+        self.output_size = output_size
         self.dropout_p = dropout_p
         self.max_length = max_length
 
-        self.embedding = nn.Embedding(self.output_dim, self.hidden_dim)
-        self.attn = nn.Linear(self.hidden_dim * 2, self.max_length)
-        self.attn_combine = nn.Linear(self.hidden_dim * 2, self.hidden_dim)
+        self.embedding = nn.Embedding(self.output_size, self.hidden_size)
+        self.attn = nn.Linear(self.hidden_size * 2, self.max_length)
+        self.attn_combine = nn.Linear(self.hidden_size * 2, self.hidden_size)
         self.dropout = nn.Dropout(self.dropout_p)
-        self.gru = nn.GRU(self.hidden_dim, self.hidden_dim)
-        self.out = nn.Linear(self.hidden_dim, self.output_dim)
+        self.gru = nn.GRU(self.hidden_size, self.hidden_size)
+        self.out = nn.Linear(self.hidden_size, self.output_size)
 
     def forward(self, input, hidden, encoder_outputs):
         embedded = self.embedding(input).view(1, 1, -1)
         embedded = self.dropout(embedded)
 
-        attn_weights = Variable(
-            F.softmax(self.attn(torch.cat((embedded[0], hidden[0]), 1)), dim=1)
+        attn_weights = F.softmax(
+            self.attn(torch.cat((embedded[0], hidden[0]), 1)), dim=1
         )
         attn_applied = torch.bmm(
             attn_weights.unsqueeze(0), encoder_outputs.unsqueeze(0)
@@ -153,7 +150,7 @@ class AttnDecoderRNN(nn.Module):
 
 
 # 7 seq2seq
-class Seq2Seq(nn.Module):
+class AttnSeq2Seq(nn.Module):
     def __init__(self, encoder, decoder, device, MAX_LENGTH=MAX_LENGTH):
         super().__init__()
         self.encoder = encoder
@@ -164,7 +161,7 @@ class Seq2Seq(nn.Module):
         input_length = input_lang.size(0)
         batch_size = output_lang.shape[1]
         target_length = output_lang.shape[0]
-        vocab_size = self.decoder.output_dim
+        vocab_size = self.decoder.output_size
         outputs = torch.zeros(target_length, batch_size, vocab_size).to(self.device)
 
         for i in range(input_length):
@@ -173,7 +170,9 @@ class Seq2Seq(nn.Module):
         decoder_input = torch.tensor([SOS_token], device=device)
 
         for t in range(target_length):
-            decoder_output, decoder_hidden = self.decoder(decoder_input, decoder_hidden)
+            decoder_output, decoder_hidden, encoder_output = self.decoder(
+                decoder_input, decoder_hidden, encoder_output
+            )
             outputs[t] = decoder_output
             teacher_force = random.random() < teacher_forcing_ratio
             topv, topi = decoder_output.topk(1)
@@ -279,9 +278,9 @@ num_layers = 1
 input_size = input_lang.n_words
 output_size = output_lang.n_words
 
-encoder1 = Encoder(input_size, hidden_size, embed_size, num_layers).to(device)
+encoder1 = Encoder(input_size, hidden_size, embed_size, num_layers)
 attn_decoder1 = AttnDecoderRNN(hidden_size, output_size, dropout_p=0.1).to(device)
-model = Seq2Seq(encoder1, attn_decoder1, device).to(device)
+model = AttnSeq2Seq(encoder1, attn_decoder1, device).to(device)
 
 print(encoder1)
 print(attn_decoder1)
