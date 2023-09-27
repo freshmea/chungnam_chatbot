@@ -184,3 +184,51 @@ def train(
 # 9 train model
 optimizer = optim.Adam(model.parameters(), lr=2e-5)
 train(model=model, optimizer=optimizer)
+
+# 10 loss plot
+train_loss_list, valid_loss_list, global_steps_list = load_metrics("data/metrics.pt")
+
+plt.plot(global_steps_list, train_loss_list, label="Train")
+plt.plot(global_steps_list, valid_loss_list, label="Valid")
+
+plt.xlabel("Global Steps")
+plt.ylabel("Loss")
+plt.show()
+
+
+# 11 model evaluation
+def evaluation(model, test_loader):
+    y_pred = []
+    y_true = []
+
+    model.eval()
+    with torch.no_grad():
+        for text, label in test_loader:
+            encode_list = [tokenizer.encode(t, add_special_tokens=True) for t in text]
+            padded_list = [e + [0] * (512 - len(e)) for e in encode_list]
+            sample = torch.tensor(padded_list)
+            sample, label = sample.to(device), label.to(device)
+            labels = torch.tensor(label)
+            outputs = model(sample, labels=labels)
+            _, logits = outputs
+            pred = torch.argmax(F.softmax(logits), dim=1)
+            y_pred.extend(pred.tolist())
+            y_true.extend(label.tolist())
+
+    print("Classification Report:")
+    print(classification_report(y_true, y_pred, labels=[1, 0], digits=4))
+
+    cm = confusion_matrix(y_true, y_pred, labels=[1, 0])
+    ax = plt.subplot()
+    sns.heatmap(cm, annot=True, ax=ax, cmap="Blues", fmt="d")
+    ax.set_title("Confusion Matrix")
+    ax.set_xlabel("Predicted Labels")
+    ax.set_ylabel("True Labels")
+    ax.xaxis.set_ticklabels(["0", "1"])
+    ax.yaxis.set_ticklabels(["0", "1"])
+
+
+# 12 model evaluation
+best_model = model.to(device)
+load_checkpoint("data/model.pt", best_model)
+evaluation(best_model, test_loader)
