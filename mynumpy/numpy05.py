@@ -1,3 +1,6 @@
+# author: choi sugil
+# date: 2023.10.04 version: 1.0.0 license: MIT brief: keyward
+# description: basic operation
 import numpy as np
 from numpy03 import npprint
 
@@ -13,6 +16,7 @@ def main():
     b5 = b1 < 25
 
     npprint(b1, b2, b3, b4, b5)
+    print(locals()["a1"])
 
 
 if __name__ == "__main__":

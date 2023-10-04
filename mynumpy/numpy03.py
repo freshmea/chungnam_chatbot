@@ -1,3 +1,6 @@
+# author: choi sugil
+# date: 2023.10.04 version: 1.0.0 license: MIT brief: keyward
+# description: npprint user-definition print function, zeros, ones, full, eye, diag
 import numpy as np
 
 
