@@ -13,8 +13,8 @@ gmm.fit(X_train)
 print(gmm.means_, "\n", gmm.covariances_)
 print(len(np.linspace(-1, 6, 100)))
 X, Y = np.meshgrid(np.linspace(-1, 6, 100), np.linspace(-1, 6, 100))
-XX = np.array([X.ravel(), Y.ravel()]).T
-Z = -gmm.score_samples(XX)
+XY = np.array([X.ravel(), Y.ravel()]).T
+Z = -gmm.score_samples(XY)
 Z = Z.reshape(100, 100)
 
 plt.contour(X, Y, Z, levels=np.logspace(0, 2, 30))
