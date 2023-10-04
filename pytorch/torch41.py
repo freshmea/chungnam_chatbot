@@ -1,5 +1,6 @@
 # 1 import libraries
 import pandas as pd
+from scipy import cluster
 from sklearn.model_selection import train_test_split
 import torch
 from kmeans_pytorch import kmeans, kmeans_predict
@@ -41,3 +42,40 @@ print(type(x_scaled), "\n", x_scaled)
 x = torch.from_numpy(x_scaled).to(device)
 y = torch.from_numpy(y_scaled).to(device)
 print(type(x), "\n", x.size(), "\n", y.size(), x)
+
+# 7 kmeans
+num_clusters = 3
+cluster_ids_x, cluster_centers = kmeans(
+    X=x, num_clusters=num_clusters, distance="euclidean", device=device
+)
+
+print(cluster_ids_x)
+print(cluster_centers)
+
+
+# 8 predict
+cluster_ids_y = kmeans_predict(y, cluster_centers, "euclidean", device=device)
+print(cluster_ids_y)
+
+
+# 9 plot
+import matplotlib.pyplot as plt
+
+y = y.to("cpu")
+cluster_centers = cluster_centers.to("cpu")
+cluster_ids_y = cluster_ids_y.to("cpu")
+
+plt.figure(figsize=(4, 3), dpi=160)
+plt.scatter(y[:, 0], y[:, 1], c=cluster_ids_y, cmap="viridis", marker="x")
+
+plt.scatter(
+    cluster_centers[:, 0],
+    cluster_centers[:, 1],
+    c="white",
+    alpha=0.6,
+    edgecolors="black",
+    linewidths=2,
+)
+
+plt.tight_layout()
+plt.show()
