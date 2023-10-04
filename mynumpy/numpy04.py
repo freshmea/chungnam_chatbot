@@ -9,7 +9,8 @@ def main():
     a3 = np.arange(1, 10 + 1, 0.5).reshape((4, 5))
     try:
         a4 = np.reshape(a3, (5, 5))
-    except:
+        npprint(a4)
+    except Exception:
         print("Error")
     a5 = np.linspace(1, 10 + 1, 20).reshape((2, 5, 2))
     npprint(a1, a2, a3, a5)

@@ -3,9 +3,9 @@ import numpy as np
 
 def npprint(*arrays: np.ndarray) -> None:
     for array in arrays:
-        print(
-            f"Data Type: {array.dtype}, Data dim: {array.ndim}, Data Shape: {array.shape}"
-        )
+        print(f"Data Type: {array.dtype}, ", end="")
+        print(f"Data dim: {array.ndim}, ", end="")
+        print(f"Data Shape: {array.shape}")
         print("-" * 20)
         print(array)
 
@@ -22,12 +22,7 @@ def main():
     a4 = np.eye(5, k=0, dtype=np.int8)
     a5 = np.linspace(1, 25, 25).reshape((5, 5))
     a6 = np.diag(a5, k=0)
-    npprint(a1)
-    npprint(a2)
-    npprint(a3)
-    npprint(a4)
-    npprint(a5)
-    npprint(a6)
+    npprint(a1, a11, a2, a22, a3, a33, a4, a5, a6)
 
 
 if __name__ == "__main__":
