@@ -16,6 +16,7 @@ import torch.nn.functional as F
 import torchvision.transforms as T
 
 env = gym.make("CartPole-v1").unwrapped
+env.render_mode = "rgb_array"
 plt.ion()
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -76,3 +77,48 @@ class DQN(nn.Module):
         x = F.relu(self.bn2(self.conv2(x)))
         x = F.relu(self.bn3(self.conv3(x)))
         return self.head(x.view(x.size(0), -1))
+
+
+# 5 image extraction, processing
+import pyglet
+
+
+resize = T.Compose(
+    [T.ToPILImage(), T.Resize(40, interpolation=Image.CUBIC), T.ToTensor()]
+)
+
+
+# get cart location
+def get_cart_location(screen_width):
+    world_width = env.x_threshold * 2
+    scale = screen_width / world_width
+    return int(env.state[0] * scale + screen_width / 2.0)
+
+
+# get screen image
+def get_screen():
+    screen = env.render().transpose((2, 0, 1))
+    _, screen_height, screen_width = screen.shape
+    screen = screen[:, int(screen_height * 0.4) : int(screen_height * 0.8)]
+    view_width = int(screen_width * 0.6)
+    cart_location = get_cart_location(screen_width)
+
+    if cart_location < view_width // 2:
+        slice_range = slice(view_width)
+    elif cart_location > (screen_width - view_width // 2):
+        slice_range = slice(-view_width, None)
+    else:
+        slice_range = slice(
+            cart_location - view_width // 2, cart_location + view_width // 2
+        )
+    screen = screen[:, :, slice_range]
+    screen = np.ascontiguousarray(screen, dtype=np.float32) / 255
+    screen = torch.from_numpy(screen)
+    return resize(screen).unsqueeze(0).to(device)
+
+
+env.reset()
+plt.figure()
+plt.imshow(get_screen().cpu().squeeze(0).permute(1, 2, 0).numpy(), interpolation="none")
+plt.title("화면 예시")
+plt.show()
