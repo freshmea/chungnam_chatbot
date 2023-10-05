@@ -170,3 +170,84 @@ def select_action(state):
 
 
 episode_durations = []
+
+
+# 7 optimizer setting
+def optimize_model():
+    if len(memory) < BATCH_SIZE:
+        return
+
+    transitions = memory.sample(BATCH_SIZE)
+    batch = Transition(*zip(*transitions))
+    non_final_mask = torch.tensor(
+        tuple(map(lambda s: s is not None, batch.next_state)),
+        device=device,
+        dtype=torch.bool,
+    )
+    non_final_next_states = torch.cat([s for s in batch.next_state if s is not None])
+
+    state_batch = torch.cat(batch.state)
+    action_batch = torch.cat(batch.action)
+    reward_batch = torch.cat(batch.reward)
+
+    state_action_values = policy_net(state_batch).gather(1, action_batch)
+    next_state_values = torch.zeros(BATCH_SIZE, device=device)
+    next_state_values[non_final_mask] = (
+        target_net(non_final_next_states).max(1)[0].detach()
+    )
+    expected_state_action_values = (next_state_values * GAMMA) + reward_batch
+
+    loss = F.smooth_l1_loss(
+        state_action_values, expected_state_action_values.unsqueeze(1)
+    )
+    optimizer.zero_grad()
+    loss.backward()
+
+    for param in policy_net.parameters():
+        param.grad.data.clamp_(-1, 1)
+    optimizer.step()
+
+
+# 8 training
+num_episodes = 50
+
+for i_episode in range(num_episodes):
+    env.reset()
+    last_screen = get_screen()
+    current_screen = get_screen()
+    state = current_screen - last_screen
+
+    for t in count():
+        action = select_action(state)
+        _, reward, done, _, _ = env.step(action.item())
+        reward = torch.tensor([reward], device=device)
+
+        last_screen = current_screen
+        current_screen = get_screen()
+
+        if not done:
+            next_state = current_screen - last_screen
+        else:
+            next_state = None
+
+        memory.push(state, action, next_state, reward)
+        state = next_state
+
+        optimize_model()
+        if done:
+            episode_durations.append(t + 1)
+            print("버틴 시간: ", t)
+            break
+    if i_episode % TARGET_UPDATE == 0:
+        target_net.load_state_dict(policy_net.state_dict())
+
+    print("Complete")
+    plt.figure()
+    plt.imshow(
+        get_screen().cpu().squeeze(0).permute(1, 2, 0).numpy(), interpolation="none"
+    )
+    plt.title("화면")
+    plt.show()
+env.render()
+env.close()
+plt.show()
