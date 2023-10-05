@@ -9,7 +9,7 @@ from pandas04 import pdprint
 def main():
     a = np.array([0])
     b = pd.Series(a)
-    print(a, b)
+    pdprint(b)
 
 
 if __name__ == "__main__":

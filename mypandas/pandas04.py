@@ -5,9 +5,8 @@ import numpy as np
 import pandas as pd
 
 
-def pdprint(*pandas_datas: pd.DataFrame) -> None:
+def pdprint(*pandas_datas: pd.DataFrame | pd.Series) -> None:
     for data in pandas_datas:
-        print(f"Data name: {data.name}, ", end="")
         print(f"Data Type: {data.dtypes}, ", end="")
         print(f"Data dim: {data.ndim}, ", end="")
         print(f"Data Shape: {data.shape}")
