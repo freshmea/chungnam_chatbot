@@ -1,6 +1,6 @@
 # author: choi sugil
-# date: 2023.10.05 version: 1.0.0 license: MIT brief: keyward
-# description: csv
+# date: 2023.10.05 version: 1.0.0 license: MIT brief: csv
+# description: load and save csv files
 # import numpy as np
 import pandas as pd
 from pandas04 import pdprint
