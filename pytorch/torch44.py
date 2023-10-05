@@ -209,8 +209,11 @@ def optimize_model():
 
 
 # 8 training
-num_episodes = 50
+from IPython.display import clear_output
 
+num_episodes = 5000
+
+t_li = []
 for i_episode in range(num_episodes):
     env.reset()
     last_screen = get_screen()
@@ -234,20 +237,23 @@ for i_episode in range(num_episodes):
         state = next_state
 
         optimize_model()
+        # plt imshow in jupyter notebook update same figure
+        clear_output(wait=True)
+        plt.imshow(
+            get_screen().cpu().squeeze(0).permute(1, 2, 0).numpy(), interpolation="none"
+        )
+        print("버틴시간 리스트", t_li)
+        plt.show()
         if done:
             episode_durations.append(t + 1)
-            print("버틴 시간: ", t)
+            t_li.append(t + 1)
             break
     if i_episode % TARGET_UPDATE == 0:
         target_net.load_state_dict(policy_net.state_dict())
 
     print("Complete")
-    plt.figure()
-    plt.imshow(
-        get_screen().cpu().squeeze(0).permute(1, 2, 0).numpy(), interpolation="none"
-    )
-    plt.title("화면")
-    plt.show()
+
+plt.title("화면")
 env.render()
 env.close()
 plt.show()
