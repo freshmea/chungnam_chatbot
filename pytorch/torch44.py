@@ -1,5 +1,6 @@
 # dqn with pytorch
 # 1 import libraries
+from email import policy
 import gym
 import math, random
 import numpy as np
@@ -8,6 +9,9 @@ import matplotlib.pyplot as plt
 from collections import namedtuple
 from itertools import count
 from PIL import Image
+from regex import B
+from scipy import optimize
+from sympy import mobius
 
 import torch
 import torch.nn as nn
@@ -122,3 +126,47 @@ plt.figure()
 plt.imshow(get_screen().cpu().squeeze(0).permute(1, 2, 0).numpy(), interpolation="none")
 plt.title("화면 예시")
 plt.show()
+
+
+# 6 model and loss function
+BATCH_SIZE = 128
+GAMMA = 0.999
+EPS_START = 0.9
+EPS_END = 0.05
+EPS_DECAY = 200
+TARGET_UPDATE = 10
+
+init_screen = get_screen()
+_, _, screen_height, screen_width = init_screen.shape
+n_actions = env.action_space.n
+
+policy_net = DQN(screen_height, screen_width, n_actions).to(device)
+target_net = DQN(screen_height, screen_width, n_actions).to(device)
+target_net.load_state_dict(policy_net.state_dict())
+target_net.eval()
+
+optimizer = optim.RMSprop(policy_net.parameters())
+memory = ReplayMemory(10000)
+
+steps_done = 0
+
+
+def select_action(state):
+    global steps_done
+    sample = random.random()
+
+    eps_threshold = EPS_END + (EPS_START - EPS_END) * math.exp(
+        -1.0 * steps_done / EPS_DECAY
+    )
+    steps_done += 1
+
+    if sample > eps_threshold:
+        with torch.no_grad():
+            return policy_net(state).max(1)[1].view(1, 1)
+    else:
+        return torch.tensor(
+            [[random.randrange(n_actions)]], device=device, dtype=torch.long
+        )
+
+
+episode_durations = []
