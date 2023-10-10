@@ -169,3 +169,24 @@ for epoch in range(epochs):
 
     print(f"Epoch {epoch} of {epochs}")
     print(f"Generator loss: {epoch_loss_g:.8f}, Discriminator loss: {epoch_loss_d:.8f}")
+
+
+# 12 pltting
+plt.figure()
+losses_g = [fl.item() for fl in losses_g]
+plt.plot(losses_g, label="Generator loss")
+losses_d = [fl.item() for fl in losses_d]
+plt.plot(losses_d, label="Discriminator Loss")
+plt.legend()
+plt.show()
+
+
+# 13 image gereration
+import numpy as np
+
+fake_images = generator(torch.randn(batch_size, nz).to(device))
+for i in range(10):
+    fake_images_img = np.reshape(fake_images.data.cpu().detach().numpy()[i], (28, 28))
+    plt.imshow(fake_images_img, cmap="gray")
+    plt.savefig(f"pytorch/data2/fake_images_img_{i}.png")
+    plt.show()
