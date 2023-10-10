@@ -1,6 +1,7 @@
 # variational autoencoder digit 0-9
 
 # 1 - Import library
+from math import log
 import torch
 import os
 from tensorboardX import SummaryWriter
@@ -111,7 +112,7 @@ def loss_function(x, x_hat, mean, log_var):
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 
 
-# model train function
+# 6 model train function
 saved_loc = "scalar/"
 writer = SummaryWriter(saved_loc)
 
@@ -156,3 +157,53 @@ def train(epoch, model, train_loder, optimizer):
             epoch, train_loss / len(train_loder.dataset)
         )
     )
+
+
+# 7 model test function
+def test(epoch, model, test_loader):
+    model.eval()
+    test_loss = 0
+    with torch.no_grad():
+        for batch_idx, (x, _) in enumerate(test_loader):
+            x = x.view(batch_size, x_dim)
+            x = x.to(device)
+            x_hat, mean, log_var = model(x)
+            BCE, KLD = loss_function(x, x_hat, mean, log_var)
+            loss = BCE + KLD
+
+            writer.add_scalar(
+                "Test/Reconstruction Error",
+                BCE.item(),
+                batch_idx + epoch * len(test_loader.dataset) / batch_size,
+            )
+            writer.add_scalar(
+                "Test/KL-Divergence",
+                KLD.item(),
+                batch_idx + epoch * len(test_loader.dataset) / batch_size,
+            )
+            writer.add_scalar(
+                "Test/Total Loss",
+                loss.item(),
+                batch_idx + epoch * len(test_loader.dataset) / batch_size,
+            )
+            test_loss += loss.item()
+
+            if batch_idx == 0:
+                n = min(x.size(0), 8)
+                comparison = torch.cat([x[:n], x_hat.view(batch_size, x_dim)[:n]])
+                grid = torchvision.utils.make_grid(comparison.cpu())
+                writer.add_image(
+                    "Test image - Above: real data, below: reconstructed data",
+                    grid,
+                    epoch,
+                )
+
+
+# 8 model train and test
+from tqdm.auto import tqdm
+
+for epoch in tqdm(range(0, epochs)):
+    train(epoch, model, train_loder, optimizer)
+    test(epoch, model, test_loader)
+    print("\n")
+writer.close()
