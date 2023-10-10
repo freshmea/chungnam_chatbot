@@ -1,10 +1,10 @@
 # auto-encoder example 0-9 digit
 # 1 import libraries
-from pathlib import PosixPath
+from matplotlib import font_manager
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 
 import torchvision.datasets as datasets
@@ -97,7 +97,7 @@ params_to_optimize = [
     {"params": encode.parameters()},
     {"params": decoder.parameters()},
 ]
-optim_ob = torch.optim.Adam(params_to_optimize, lr=0.001, weight_decay=1e-05)
+optim_ob = optim.Adam(params_to_optimize, lr=0.001, weight_decay=1e-05)
 loss_fn = torch.nn.MSELoss()
 
 
@@ -151,12 +151,8 @@ def test_epoch(encoder, decoder, device, dataloader, loss_fn, noise_factor=0.3):
 
 
 # 8 Korean font
-from matplotlib import font_manager
-import pathlib
 
-temp = pathlib.PosixPath
-pathlib.PosixPath = pathlib.WindowsPath
-font_fname = pathlib.PosixPath("C:/Windows/Fonts/malgun.ttf")
+font_fname = "C:/Windows/Fonts/malgun.ttf"
 font_family = font_manager.FontProperties(fname=font_fname).get_name()
 plt.rcParams["font.family"] = font_family
 
@@ -199,8 +195,6 @@ def plot_ae_outputs(encoder, decoder, n=5, noise_factor=0.3):
 
 
 # 10 model train
-import numpy as np
-
 num_epochs = 30
 history_da = {"train_loss": [], "test_loss": []}
 loss_fn = torch.nn.MSELoss()
@@ -215,7 +209,7 @@ for epoch in range(num_epochs):
     )
     history_da["train_loss"].append(train_loss)
     history_da["test_loss"].append(val_loss)
-    print(
-        f"\n Epoch {epoch+1}/{num_epochs}, Train Loss: {train_loss:.3f}, Test Loss: {val_loss:.3f}"
-    )
+    print(f"\n Epoch {epoch+1}/{num_epochs},", end="\t")
+    print(f"Train Loss: {train_loss:.3f},", end="\t")
+    print(f"Test Loss: {val_loss:.3f}")
     plot_ae_outputs(encode, decoder, noise_factor=0.3)
