@@ -6,3 +6,5 @@ AI/
 pytorch/data2/glove.6B.100d.txt
 pytorch/data2/glove.6B.100d.vector.txt
 pytorch/data2/*.png
+CGAN-PyTorch/
+DCGAN-PyTroch/
