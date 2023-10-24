@@ -2,6 +2,8 @@ import gradio as gr
 
 
 def answer(state, state_chatbot, text):
+    # msg 를 챗봇 api 로 전달해서 할당 받는 코드가 필요함.
+    # chat gpt api 가 필요함.
     msg = "test_msg"
 
     new_state = [
