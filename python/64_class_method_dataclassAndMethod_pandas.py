@@ -1,9 +1,9 @@
 # author: choi sugil
 # date: 2023.10.25 version: 1.0.0 license: MIT brief: keyward
 # description: 데이터클래스 와 클래스를 연동하는 프로그램 json 으로 데이터를 읽어옴
-import json
 from dataclasses import dataclass, field
 from pathlib import Path
+import pandas as pd
 
 
 @dataclass
@@ -52,11 +52,14 @@ class Student:
 
 def main():
     param_dir = r"C:\chungnam_chatbot\python"
-    with open(Path(param_dir) / "params.json", "r", encoding="UTF8") as f:
-        params = json.loads(f.read())
     students = []
-    for param in params:
-        students.append(Student(StudentArg(**param)))
+    params = pd.read_csv(Path(param_dir) / "params.csv")
+    print(params.info())
+
+    for i in range(len(params)):
+        param = dict(params.iloc[i, :])
+        arg = StudentArg(**param)  # type: ignore
+        students.append(Student(arg))
         print(f"{students[-1].name} : {students[-1].score_set}")
 
     print("이름\t총점\t평균")
