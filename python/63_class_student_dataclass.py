@@ -1,6 +1,6 @@
 # author: choi sugil
 # date: 2023.09.19 version: 1.0.0 license: MIT brief: keyward
-# description: 클래스를 사용하는 프로그램
+# description: 데이터클래스를 사용하는 프로그램
 from dataclasses import dataclass
 
 
