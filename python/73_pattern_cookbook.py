@@ -2,13 +2,15 @@
 # 위 shebang 은 'py 73_pattern_1.py' 로 실행할 때만 의미가 있음
 
 # cook book style
-import sys
 import string
+import argparse
+import os
+
+CWD = r"C:\chungnam_chatbot\python"
+os.chdir(CWD)
+
 
 # -*- coding: utf-8 -*-
-
-print(sys.version_info)
-print(sys.version)
 data = []
 words = []
 word_freqs = []
@@ -37,9 +39,9 @@ def scan():
     words = words + data_str.split()
 
 
-def remove_stop_words():
+def remove_stop_words(file_path):
     global words
-    with open("../stop_words.txt") as f:
+    with open(file_path) as f:
         stop_words = f.read().split(",")
     stop_words.extend(list(string.ascii_lowercase))
     indexes = []
@@ -68,12 +70,28 @@ def sort():
 
 
 # main
-read_file(sys.argv[1])
-filter_chars_and_normalize()
-scan()
-remove_stop_words()
-frequencies()
-sort()
+def main():
+    # make option parser with default value
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "-f",
+        "--file",
+        help="input file",
+        default=r"C:\chungnam_chatbot\python\text.txt",
+    )
+    args = vars(ap.parse_args())
+    # print(args.file)
 
-for tf in word_freqs[0:25]:
-    print(tf[0], "-", tf[1])
+    read_file(args["file"])
+    filter_chars_and_normalize()
+    scan()
+    remove_stop_words(args["file"])
+    frequencies()
+    sort()
+
+    for tf in word_freqs[0:25]:
+        print(tf[0], "-", tf[1])
+
+
+if __name__ == "__main__":
+    main()
