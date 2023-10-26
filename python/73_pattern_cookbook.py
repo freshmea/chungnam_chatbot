@@ -1,12 +1,19 @@
 #!c:/Python311/python.exe
 # 위 shebang 은 'py 73_pattern_1.py' 로 실행할 때만 의미가 있음
-
+# author: choi sugil
+# date: 2023.10.26 version: 1.0.0 license: MIT brief: keyward
+# description: pattern cook book style
 # cook book style
 import string
 import argparse
 import os
+import dotenv
+import time
 
-CWD = r"C:\chungnam_chatbot\python"
+# dotenv_file = dotenv.find_dotenv()
+dotenv.load_dotenv(dotenv.find_dotenv())
+CWD = os.environ["CWD_python"]
+print(CWD)
 os.chdir(CWD)
 
 
@@ -39,9 +46,9 @@ def scan():
     words = words + data_str.split()
 
 
-def remove_stop_words(file_path):
+def remove_stop_words():
     global words
-    with open(file_path) as f:
+    with open("stop_words.txt") as f:
         stop_words = f.read().split(",")
     stop_words.extend(list(string.ascii_lowercase))
     indexes = []
@@ -77,20 +84,22 @@ def main():
         "-f",
         "--file",
         help="input file",
-        default=r"C:\chungnam_chatbot\python\text.txt",
+        default="text.txt",
     )
     args = vars(ap.parse_args())
-    # print(args.file)
 
+    start_time = time.time()
     read_file(args["file"])
     filter_chars_and_normalize()
     scan()
-    remove_stop_words(args["file"])
+    remove_stop_words()
     frequencies()
     sort()
 
     for tf in word_freqs[0:25]:
         print(tf[0], "-", tf[1])
+    end_time = time.time()
+    print(f"func: {__name__}, elapsed time: {end_time - start_time}")
 
 
 if __name__ == "__main__":
