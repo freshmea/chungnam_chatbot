@@ -1,7 +1,7 @@
 #!c:/Python311/python.exe
 # author: choi sugil
 # date: 2023.10.26 version: 1.0.0 license: MIT brief: keyward
-# description: pattern pipeline style
+# description: pattern object style
 from abc import ABCMeta
 import argparse
 import operator
@@ -14,18 +14,29 @@ import functools
 
 
 # runtime check decorator
-def profile(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        print(f"func: {func.__name__}, elapsed time: {end_time - start_time}")
-        return result
+def iter_profile(iter=1):
+    def profile(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            time_list = []
+            result = None
+            for i in range(iter):
+                start_time = time.time()
+                print("*" * 10 + f" {i+1}th iteration start " + "*" * 10)
+                result = func(*args, **kwargs)
+                end_time = time.time()
+                time_list.append(end_time - start_time)
+            print(
+                f"func: {func.__name__}, elapsed time: {sum(time_list)/len(time_list)}"
+            )
+            return result
 
-    return wrapper
+        return wrapper
+
+    return profile
 
 
+# fix current working directory '/python' folder
 # dotenv_file = dotenv.find_dotenv()
 dotenv.load_dotenv(dotenv.find_dotenv())
 CWD = os.environ["CWD_python"]
@@ -96,14 +107,12 @@ class WordFrequencyManager(TFExercise):
         )
 
 
-@profile
 class WordFrequencyController(TFExercise):
     def __init__(self, path_to_file):
         self.storage_manager = DataStorageManager(path_to_file)
         self.stop_word_manager = StopWordManager()
         self.word_freq_manager = WordFrequencyManager()
 
-    @profile
     def run(self):
         for w in self.storage_manager.words():
             if not self.stop_word_manager.is_stop_word(w):
@@ -114,6 +123,7 @@ class WordFrequencyController(TFExercise):
             print(w, "-", c)
 
 
+@iter_profile()
 def main():
     # make option parser with default value
     ap = argparse.ArgumentParser()
