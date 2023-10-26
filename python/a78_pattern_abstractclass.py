@@ -1,6 +1,6 @@
 # author: choi sugil
 # date: 2023.10.13 version: 1.0.0 license: MIT brief: keyward
-# description: default main program with option parser and cwd, dotenv
+# description: abstract class pattern
 import argparse
 import dotenv
 import os
