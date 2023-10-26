@@ -132,7 +132,9 @@ def main():
         help="input file",
         default="text.txt",
     )
+    print(ap.parse_args())
     args = vars(ap.parse_args())
+
     # calculate run time by using decorator
     WordFrequencyController(args["file"]).run()
 
