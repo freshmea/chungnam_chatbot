@@ -26,9 +26,8 @@ def iter_profile(iter=1):
                 result = func(*args, **kwargs)
                 end_time = time.time()
                 time_list.append(end_time - start_time)
-            print(
-                f"func: {func.__name__}, elapsed time: {sum(time_list)/len(time_list)}"
-            )
+            print(f"*****************\nfunc: {func.__name__},")
+            print(f"Mean Elapsed Time: {sum(time_list)/len(time_list)}")
             return result
 
         return wrapper

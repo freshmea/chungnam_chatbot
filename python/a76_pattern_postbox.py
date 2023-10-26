@@ -1,14 +1,13 @@
 # author: choi sugil
 # date: 2023.10.13 version: 1.0.0 license: MIT brief: keyward
-# description:
+# description: postbox pattern
 import argparse
 import dotenv
 import os
 import operator
 import string
-import time
 import re
-from a75_pattern_object import profile
+from a75_pattern_object import iter_profile
 
 # fix current working directory '/python' folder
 # dotenv_file = dotenv.find_dotenv()
@@ -108,7 +107,7 @@ class WordFrequencyController:
             print(w, " - ", c)
 
 
-@profile
+@iter_profile(1000)
 def main():
     # make option parser with default value
     ap = argparse.ArgumentParser()
