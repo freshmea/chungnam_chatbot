@@ -3,7 +3,7 @@
 # author: choi sugil
 # date: 2023.10.26 version: 1.0.0 license: MIT brief: keyward
 # description: pattern cook book style
-# cook book style
+
 import string
 import argparse
 import os
