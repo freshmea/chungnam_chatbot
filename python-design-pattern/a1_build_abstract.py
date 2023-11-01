@@ -53,7 +53,7 @@ class ConcreteProductA2(AbstractProductA):
 
 class AbstractProductB(ABC):
     @abstractmethod
-    def useful_function_b(self) -> None:
+    def useful_function_b(self) -> str:
         pass
 
     @abstractmethod
