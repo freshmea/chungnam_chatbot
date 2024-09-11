@@ -149,7 +149,8 @@ for epoch in range(num_epochs):
             correct = 0
             total = 0
             for images, labels in valid_loader:
-                images = images.to(device)
+                images = Variable(images.view(-1, seq_dim, input_dim)).to(device)
+                # images = images.to(device)
                 outputs = model(images)
                 _, predicted = torch.max(outputs.data, 1)
                 total += labels.size(0)
